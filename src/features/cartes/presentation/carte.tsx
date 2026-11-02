@@ -51,7 +51,7 @@ type Props = {
 export function SatelliteMap({
 	markers = MARKERS,
 	center = [51.505, -0.09],
-	zoom = 13,
+	zoom = 18,
 }: Props) {
 	const icons = useMemo(
 		() => new Map(markers.map((m) => [m.id, createPinIcon(m.color, m.size)])),
@@ -59,7 +59,7 @@ export function SatelliteMap({
 	);
 
 	return (
-		<MapContainer center={center} zoom={zoom} maxZoom={18} style={{ height: "50vh", width: "100%" }}>
+		<MapContainer center={center} zoom={zoom}  maxZoom={18} style={{ height: "50vh", width: "100%" }}>
 			<TileLayer
 				url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
 				attribution="Tiles &copy; Esri"

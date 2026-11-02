@@ -44,25 +44,15 @@ export function Filter({ active, setActive, counts }: FilterProps) {
               key={name}
               type="button"
               onClick={() => setActive(name)}
-              className={`flex min-w-[90px] flex-1 flex-col items-center justify-center gap-2 rounded-xl border px-3 py-4 text-xs font-semibold transition sm:text-sm ${
+              className={`flex min-w-[90px] h-15 flex-1 flex-col items-center justify-center gap-2 rounded-xl border text-xs font-semibold transition sm:text-sm ${
                 isActive
-                  ? "border-red-600 bg-red-50 text-red-600 shadow-xs dark:bg-red-950/40 dark:text-red-400"
+                  ? "border-red-600 text-red-600 shadow-xs dark:bg-red-950/40 dark:text-red-400"
                   : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-red-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-gray-300 dark:hover:text-red-400"
               }`}
             >
-              <Icon size={20} strokeWidth={1.8} />
+              <Icon size={15} strokeWidth={1.8} />
               <span className="whitespace-nowrap">{name}</span>
-              {typeof count === "number" && (
-                <span
-                  className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
-                    isActive
-                      ? "bg-red-200/80 text-red-800 dark:bg-red-900/60 dark:text-red-200"
-                      : "bg-gray-100 text-gray-500 dark:bg-neutral-800 dark:text-gray-400"
-                  }`}
-                >
-                  {count}
-                </span>
-              )}
+
             </button>
           );
         })}

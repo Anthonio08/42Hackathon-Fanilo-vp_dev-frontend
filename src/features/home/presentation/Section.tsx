@@ -36,7 +36,6 @@ export function Section(value: SectionModel) {
                 {value.category}
               </span>
             )}
-            {value.status && renderStatusBadge(value.status)}
           </div>
 
           <h1
