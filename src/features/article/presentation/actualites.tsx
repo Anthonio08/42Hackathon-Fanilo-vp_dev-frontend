@@ -9,7 +9,6 @@ import {
   ChevronRight,
   Clock,
   RefreshCw,
-  ShieldAlert,
 } from "lucide-react";
 import { articleRepository } from "../repository/article.repository";
 import type { ArticleItem } from "../domain/article.entity";
@@ -163,6 +162,71 @@ export default function Actualites() {
           </button>
         </div>
 
+        {/* Badges de stats de vérification */}
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="flex items-center gap-2.5 rounded-xl border border-gray-100 bg-white p-3 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-xs font-bold text-gray-700 dark:bg-neutral-800 dark:text-gray-300">
+              {stats.total}
+            </span>
+            <div>
+              <p className="text-[11px] text-gray-400">Total articles</p>
+              <p className="text-xs font-semibold text-gray-900 dark:text-white">Collectés</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 rounded-xl border border-emerald-100 bg-emerald-50/50 p-3 shadow-xs dark:border-emerald-950/60 dark:bg-emerald-950/20">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-xs font-bold text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300">
+              {stats.verified}
+            </span>
+            <div>
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400">Certifiés</p>
+              <p className="text-xs font-semibold text-emerald-950 dark:text-emerald-200">Vérifiés</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 rounded-xl border border-rose-100 bg-rose-50/50 p-3 shadow-xs dark:border-rose-950/60 dark:bg-rose-950/20">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-100 text-xs font-bold text-rose-700 dark:bg-rose-900/60 dark:text-rose-300">
+              {stats.fake}
+            </span>
+            <div>
+              <p className="text-[11px] text-rose-600 dark:text-rose-400">Fake News</p>
+              <p className="text-xs font-semibold text-rose-950 dark:text-rose-200">Identifiées</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 rounded-xl border border-amber-100 bg-amber-50/50 p-3 shadow-xs dark:border-amber-950/60 dark:bg-amber-950/20">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-xs font-bold text-amber-700 dark:bg-amber-900/60 dark:text-amber-300">
+              {stats.unverified}
+            </span>
+            <div>
+              <p className="text-[11px] text-amber-600 dark:text-amber-400">En cours</p>
+              <p className="text-xs font-semibold text-amber-950 dark:text-amber-200">À analyser</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Filtres par Statut */}
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-gray-500 mr-1">Statut :</span>
+          {STATUS_FILTERS.map((filter) => {
+            const Icon = filter.icon;
+            const isActive = activeStatus === filter.id;
+            return (
+              <button
+                key={filter.id}
+                type="button"
+                onClick={() => handleStatusChange(filter.id)}
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                  isActive
+                    ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-xs"
+                    : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 dark:border-neutral-800 dark:bg-neutral-900 dark:text-gray-300"
+                }`}
+              >
+                {Icon && <Icon size={13} className={isActive ? "" : filter.color} />}
+                {filter.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Filtres par Catégorie */}
         <div className="mb-6 flex flex-wrap gap-2">
           {CATEGORIES.map((cat) => {
             const isActive = activeCategory === cat;

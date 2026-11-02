@@ -28,6 +28,7 @@ export interface ArticleItem {
   date?: string;
   color?: "red" | "blue" | "yellow" | "purple" | "green";
   nbComs?: number;
+  paragraphs?: string[];
 }
 
 export class ArticleItemModel implements ArticleItem {
@@ -50,6 +51,7 @@ export class ArticleItemModel implements ArticleItem {
   date?: string;
   color?: "red" | "blue" | "yellow" | "purple" | "green";
   nbComs?: number;
+  paragraphs?: string[];
 
   constructor(data: Partial<ArticleItem> & { id: number; title: string }) {
     this.id = data.id;

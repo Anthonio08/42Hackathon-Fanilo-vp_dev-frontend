@@ -72,7 +72,13 @@ export function renderStatusBadge(status?: ArticleStatus | string) {
   }
 }
 
-export function ArticleCard({ article }: { article: CardArticle }) {
+export function ArticleCard({
+  article,
+  onClick,
+}: {
+  article: CardArticle;
+  onClick?: (article: CardArticle) => void;
+}) {
   const imageSrc =
     article.image ||
     ("image_url" in article && article.image_url) ||
@@ -109,6 +115,15 @@ export function ArticleCard({ article }: { article: CardArticle }) {
   return (
     <article
       key={article.title}
+      onClick={() => onClick?.(article)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick?.(article);
+        }
+      }}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       className={`group flex cursor-pointer flex-col overflow-hidden rounded-xl border bg-white transition hover:shadow-lg dark:bg-neutral-900 ${
         isFake
           ? "border-red-300 ring-1 ring-red-200 dark:border-red-900/60 dark:ring-red-900/40"
