@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { Loader2, Mail } from "lucide-react";
-import { Button } from "@/shared/ui/button";
 import { TextField, PasswordField } from "@/shared/ui/field";
 import { useLoginForm } from "./use-login-form";
 
@@ -67,9 +66,9 @@ export function LoginForm() {
 			</div>
 
 			<p className={`${enter} text-muted-foreground pt-1 text-center text-sm`} style={{ animationDelay: "500ms" }}>
-				Vous n'avez pas encore un compte ?{" "}
+				Vous n&apos;avez pas encore un compte ?{" "}
 				<Link href="/register" className="text-red-400 font-semibold hover:underline">
-					S'inscire
+					S&apos;inscrire
 				</Link>
 			</p>
 		</form>
