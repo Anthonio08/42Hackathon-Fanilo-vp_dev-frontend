@@ -383,7 +383,7 @@ export function CarteLayout() {
         </div> */}
 
         {/* ── Filtres Catégories sous forme de Pills ── */}
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+        {/* <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           {CATEGORIES_CONFIG.map((cat) => {
             const isActive = selectedCategory === cat.name;
             const count = categoryCounts[cat.name] || 0;
@@ -416,7 +416,7 @@ export function CarteLayout() {
               </button>
             );
           })}
-        </div>
+        </div> */}
 
         {/* ── Cœur de l'Expérience : Split Screen Carte + Feed interactif ── */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start">
@@ -433,24 +433,7 @@ export function CarteLayout() {
                 onConfirmIncident={handleConfirmIncident}
               />
 
-              {/* Badge flottant compteurs visibles */}
-              <div className="absolute left-4 top-4 z-[400] inline-flex items-center gap-2 rounded-xl bg-white/95 px-3 py-1.5 text-xs font-bold text-gray-900 shadow-md backdrop-blur dark:bg-neutral-900/95 dark:text-white">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                {filteredIncidents.length} incident(s) affiché(s)
-              </div>
-
-              {/* Bouton recentrer flottant */}
-              <button
-                type="button"
-                onClick={() => {
-                  setMapCenter(ANTANANARIVO_CENTER);
-                  setMapZoom(14);
-                }}
-                className="absolute right-4 top-4 z-[400] inline-flex items-center gap-1.5 rounded-xl bg-white/95 px-3 py-1.5 text-xs font-bold text-gray-900 shadow-md backdrop-blur transition hover:bg-white dark:bg-neutral-900/95 dark:text-white dark:hover:bg-neutral-900"
-              >
-                <Compass size={14} className="text-red-600" />
-                Antananarivo
-              </button>
+        
             </div>
 
             {/* Légende rapide sous la carte */}
@@ -476,7 +459,6 @@ export function CarteLayout() {
           <div className="lg:col-span-4 flex flex-col gap-3">
             <div className="flex items-center justify-between px-1">
               <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <Clock size={16} className="text-red-600" />
                 Fil des signalements ({filteredIncidents.length})
               </h3>
               <span className="text-[11px] text-gray-400">
@@ -524,28 +506,6 @@ export function CarteLayout() {
                         >
                           {incident.category}
                         </span>
-
-                        <div className="flex items-center gap-1.5">
-                          {incident.severity === "high" && (
-                            <span className="inline-flex items-center gap-0.5 rounded bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
-                              <AlertOctagon size={10} /> Critique
-                            </span>
-                          )}
-                          {incident.severity === "medium" && (
-                            <span className="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
-                              <AlertTriangle size={10} /> Modéré
-                            </span>
-                          )}
-                          {incident.severity === "low" && (
-                            <span className="inline-flex items-center gap-0.5 rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
-                              Faible
-                            </span>
-                          )}
-
-                          <span className="text-[10px] text-gray-400">
-                            {incident.time}
-                          </span>
-                        </div>
                       </div>
 
                       {/* Titre */}
