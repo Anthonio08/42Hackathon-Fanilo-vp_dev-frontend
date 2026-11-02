@@ -12,6 +12,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import Image from "next/image";
+import { FacebookIcon, GoogleIcon } from "../layout/icon";
 
 export type CardArticle = DomainArticleItem | HomeArticleItem;
 
@@ -143,15 +144,25 @@ export function ArticleCard({
           className="object-cover transition duration-500 group-hover:scale-105"
         />
 
-        {/* Badge Statut en haut à droite (Vérifié / Fake News / etc.) */}
+        {/* Badge Statut en haut à droite (Vérifié / Fake News / etc.)
         <div className="absolute top-2.5 right-2.5 z-10">
           {renderStatusBadge(status)}
-        </div>
+        </div> */}
+
 
         {/* Badge source originale en bas à gauche si disponible */}
         {"source" in article && article.source && (
-          <div className="absolute bottom-2 left-2 z-10 rounded bg-black/60 px-2 py-0.5 text-[10px] font-semibold uppercase text-white backdrop-blur-sm">
-            {article.source}
+          <div className="absolute bottom-2 left-2 z-10 rounded bg-black/60 px-2 py-0.5 text-[10px] font-semibold uppercase text-white backdrop-blur-sm flex gap-1 py-1 items-center">
+            {
+                article.source == "facebook" ?
+                <div className="text-blue-400 dark:bg-blue-950/60 dark:text-blue-300">
+                  <FacebookIcon/>
+                </div>: 
+                <GoogleIcon /> 
+            }
+            {
+              article.source
+            }
           </div>
         )}
       </div>

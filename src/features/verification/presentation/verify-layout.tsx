@@ -20,20 +20,9 @@ import type {
   VerificationSource,
   VerificationVerdict,
 } from "../domain/verification.entity";
+import { FacebookIcon, GoogleIcon } from "@/shared/layout/icon";
+import { TitleComponent } from "@/features/article/presentation/actualites";
 
-function FacebookIcon({ size = 12 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-    </svg>
-  );
-}
 
 const SUGGESTIONS = [
   "Mickael Randrianirina est president de la republique",
@@ -77,8 +66,8 @@ function getVerdictInfo(verdict?: VerificationVerdict) {
   return {
     title: "Non Vérifié",
     label: "Sources insuffisantes",
-    badgeClass: "bg-amber-500 text-white",
-    bgClass: "bg-amber-50/80 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/60",
+    badgeClass: "bg-gray-500 text-white",
+    bgClass: "bg-gray-50/80 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/60",
     textClass: "text-amber-800 dark:text-amber-300",
     icon: AlertTriangle,
   };
@@ -194,22 +183,13 @@ export function VerifyLayout() {
     <main className="w-full pb-16 pt-8">
       <div className="mx-auto w-full max-w-7xl px-6">
         {/* En-tête */}
-        <div className="mb-8 text-center sm:text-left">
-          <div className="inline-flex items-center gap-2 rounded-full bg-red-100 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-red-700 dark:bg-red-950/60 dark:text-red-300 mb-3">
-            <ShieldCheck size={14} /> Fact-Checking IA &amp; Veille Web
-          </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-950 dark:text-white sm:text-4xl">
-            Vérificateur d&apos;Informations
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-            Soumettez une rumeur, déclaration ou affirmation. Notre moteur
+    
+        <TitleComponent title="Vérificateur d&apos;Informations" description="Soumettez une rumeur, déclaration ou affirmation. Notre moteur
             analyse Google et Facebook en temps réel, croise les sources et
-            établit un verdict de fiabilité.
-          </p>
-        </div>
+            établit un verdict de fiabilité."/>
 
         {/* Formulaire de vérification */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-2xl mt-5 border border-gray-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -235,13 +215,18 @@ export function VerifyLayout() {
               <button
                 type="submit"
                 disabled={loading || !claim.trim()}
-                className="absolute right-2.5 top-2.5 flex h-10 w-10 items-center justify-center rounded-lg bg-red-600 text-white transition hover:bg-red-700 disabled:opacity-50"
+                className="absolute right-2.5 top-2 flex h-10 w-30 items-center justify-center rounded-lg bg-red-600 text-white transition hover:bg-red-700 disabled:opacity-50"
                 aria-label="Lancer la vérification"
               >
                 {loading ? (
                   <Sparkles size={18} className="animate-spin" />
                 ) : (
-                  <ArrowRight size={18} />
+                  <div className="flex justify-center items-center gap-2">
+                    <div>
+                      Lancer
+                    </div>
+                    <ArrowRight size={18} className=""/>
+                  </div>
                 )}
               </button>
             </div>
@@ -313,7 +298,7 @@ export function VerifyLayout() {
                   </p>
                 </div>
 
-                {/* Score de confiance */}
+                {/* Score de confiance
                 <div className="flex sm:flex-col items-center sm:items-end justify-between border-t border-gray-200/60 pt-3 sm:border-0 sm:pt-0">
                   <span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                     Confiance
@@ -327,7 +312,7 @@ export function VerifyLayout() {
                       style={{ width: `${confidencePercent}%` }}
                     />
                   </div>
-                </div>
+                </div> */}
               </div>
 
               {/* Compteurs de sources */}
@@ -363,7 +348,6 @@ export function VerifyLayout() {
             <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <Globe size={18} className="text-red-600" />
                   Sources et preuves analysées ({result.sources.length})
                 </h3>
                 <span className="text-xs text-gray-400">
@@ -389,7 +373,7 @@ export function VerifyLayout() {
                                   : "bg-gray-100 text-gray-700 dark:bg-neutral-800 dark:text-gray-300"
                               }`}
                             >
-                              {isFacebook ? <FacebookIcon size={10} /> : <Globe size={10} />}
+                              {isFacebook ? <FacebookIcon size={10} /> : <GoogleIcon size={10} />}
                               {src.source_type}
                             </span>
 
@@ -468,7 +452,6 @@ export function VerifyLayout() {
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${info.badgeClass}`}
                       >
-                        <info.icon size={11} />
                         {info.title}
                       </span>
                       <span className="text-[11px] text-gray-400">

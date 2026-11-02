@@ -161,29 +161,6 @@ export function Article({
         </div>
       </div>
 
-      {/* Filtres par Statut de vérification */}
-      <div className="mb-6 flex flex-wrap items-center gap-1.5">
-        {STATUS_FILTERS.map((f) => {
-          const Icon = f.icon;
-          const isActive = statusFilter === f.id;
-          return (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => handleStatusChange(f.id)}
-              className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
-                isActive
-                  ? "bg-gray-900 text-white shadow-xs dark:bg-white dark:text-gray-950"
-                  : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 dark:border-neutral-800 dark:bg-neutral-900 dark:text-gray-300"
-              }`}
-            >
-              {Icon && <Icon size={12} className={isActive ? "" : f.color} />}
-              <span>{f.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
       {/* Grille d'articles ou Squelettes de chargement */}
       {loading ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
