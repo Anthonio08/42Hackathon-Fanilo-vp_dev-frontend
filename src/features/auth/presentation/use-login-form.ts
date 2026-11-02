@@ -21,7 +21,7 @@ export function useLoginForm() {
 		setServerError(null);
 		try {
 			await authRepository.login(values);
-			router.replace("/dashboard");
+			router.replace("/");
 		} catch (error) {
 			setServerError(
 				error instanceof InvalidCredentialsError

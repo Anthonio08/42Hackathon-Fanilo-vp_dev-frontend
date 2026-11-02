@@ -1,4 +1,5 @@
 export interface ArticleItem {
+    id?: number | string
     title: string
     description: string
     date: string
@@ -6,6 +7,8 @@ export interface ArticleItem {
     image: string
     category: string
     color: "red" | "blue" | "yellow" | "purple" | "green"
+    paragraphs?: string[]
+    content?: string
   }
   
 export const articles: ArticleItem[] = [
