@@ -10,6 +10,7 @@ import {
 import { renderStatusBadge } from "@/shared/ui/article_card";
 
 export interface SectionModel {
+  id?: number | string;
   title: string;
   description: string;
   date: string;
@@ -36,6 +37,7 @@ export function Section(value: SectionModel) {
                 {value.category}
               </span>
             )}
+            {renderStatusBadge(value.status)}
           </div>
 
           <h1
@@ -74,7 +76,7 @@ export function Section(value: SectionModel) {
               </button>
             ) : (
               <a
-                href="/actualites"
+                href={value.id ? `/actualites/${value.id}` : "/actualites"}
                 className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-red-700"
               >
                 Lire l&apos;article

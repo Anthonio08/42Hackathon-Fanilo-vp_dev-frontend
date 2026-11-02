@@ -97,6 +97,7 @@ export default function HomeLayout() {
         <div className="min-w-0 lg:col-span-2">
           {featured ? (
             <Section
+              id={featured.id}
               title={featured.title}
               date={
                 featured.published_at

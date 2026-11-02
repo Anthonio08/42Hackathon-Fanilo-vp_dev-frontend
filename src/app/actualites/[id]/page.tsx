@@ -1,16 +1,22 @@
+import { Navbar } from "@/shared/ui/navbar";
+import { Footer } from "@/shared/ui/footer";
 import ArticleDetail from "@/features/article/presentation/articleDetail";
 
-export default async function Page({
-  params,
-}: {
+interface PageProps {
   params: Promise<{ id: string }>;
-}) {
+}
+
+export default async function ActualiteDetailPage({ params }: PageProps) {
   const { id } = await params;
 
   return (
-    <div>
-      <p className="p-4 text-sm text-gray-400">Article n°{id}</p>
-      <ArticleDetail />
+    <div className="flex min-h-screen flex-col justify-between">
+      <Navbar />
+      <main className="w-full flex-1">
+        <ArticleDetail id={id} />
+      </main>
+      <Footer />
     </div>
   );
 }
+

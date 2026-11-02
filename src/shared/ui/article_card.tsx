@@ -12,6 +12,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { FacebookIcon, GoogleIcon } from "../layout/icon";
 
 export type CardArticle = DomainArticleItem | HomeArticleItem;
@@ -112,19 +113,28 @@ export function ArticleCard({
   const status = "status" in article ? article.status : undefined;
   const isFake = status?.toLowerCase() === "fake";
   const isVerified = status?.toLowerCase() === "verified";
+  const router = useRouter();
+
+  const handleCardClick = () => {
+    if (onClick) {
+      onClick(article);
+    } else if ("id" in article && article.id !== undefined && article.id !== null) {
+      router.push(`/actualites/${article.id}`);
+    }
+  };
 
   return (
     <article
       key={article.title}
-      onClick={() => onClick?.(article)}
+      onClick={handleCardClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          onClick?.(article);
+          handleCardClick();
         }
       }}
-      role={onClick ? "button" : undefined}
-      tabIndex={onClick ? 0 : undefined}
+      role="button"
+      tabIndex={0}
       className={`group flex cursor-pointer flex-col overflow-hidden rounded-xl border bg-white transition hover:shadow-lg dark:bg-neutral-900 ${
         isFake
           ? "border-red-300 ring-1 ring-red-200 dark:border-red-900/60 dark:ring-red-900/40"
