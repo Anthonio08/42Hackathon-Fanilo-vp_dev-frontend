@@ -1,5 +1,3 @@
-import { Navbar } from "@/shared/layout/navbar";
-
 export default function MainLayout({
   children,
 }: {

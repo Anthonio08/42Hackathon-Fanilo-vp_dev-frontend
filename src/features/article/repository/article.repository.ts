@@ -3,7 +3,7 @@ import {
   ArticleDatasource,
   ArticleQueryParams,
 } from "../source/articles.datasource";
-import type { ArticleItem } from "../domain/article.entity";
+import type { ArticleItem, ArticleStatus } from "../domain/article.entity";
 
 export interface ArticleRepository {
   getAll(params?: ArticleQueryParams): Promise<ArticleItem[]>;
@@ -69,6 +69,16 @@ export class ArticleRepositoryImpl implements ArticleRepository {
   }
 
   private getLocalArticles(params?: ArticleQueryParams): ArticleItem[] {
+    const sampleStatuses: ArticleStatus[] = [
+      "verified",
+      "fake",
+      "verified",
+      "unverified",
+      "pending",
+      "verified",
+      "fake",
+    ];
+
     let result: ArticleItem[] = articles.map((item, index) => ({
       id: typeof item.id === "number" ? item.id : index + 1,
       title: item.title,
@@ -77,7 +87,7 @@ export class ArticleRepositoryImpl implements ArticleRepository {
       source_url: "",
       author: null,
       image_url: item.image,
-      status: "published",
+      status: sampleStatuses[index % sampleStatuses.length],
       collected_by_id: 1,
       published_at: item.date,
       collected_at: new Date().toISOString(),
@@ -90,6 +100,12 @@ export class ArticleRepositoryImpl implements ArticleRepository {
       date: item.date,
       nbComs: item.nbComs,
     }));
+
+    if (params?.status && params.status !== "Tous") {
+      result = result.filter(
+        (item) => item.status?.toLowerCase() === params.status?.toLowerCase()
+      );
+    }
 
     if (params?.category && params.category !== "Tous") {
       result = result.filter(

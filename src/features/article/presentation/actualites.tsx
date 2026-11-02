@@ -1,12 +1,29 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import {
+  AlertOctagon,
+  AlertTriangle,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  RefreshCw,
+  ShieldAlert,
+} from "lucide-react";
 import { articleRepository } from "../repository/article.repository";
 import type { ArticleItem } from "../domain/article.entity";
 import { ArticleCard } from "@/shared/ui/article_card";
 
 const ITEMS_PER_PAGE = 6;
+
+const STATUS_FILTERS = [
+  { id: "all", label: "Tous", icon: null },
+  { id: "verified", label: "Vérifiés", icon: CheckCircle2, color: "text-emerald-600" },
+  { id: "fake", label: "Fake News", icon: AlertOctagon, color: "text-red-600" },
+  { id: "unverified", label: "Non vérifiés", icon: AlertTriangle, color: "text-amber-500" },
+  { id: "pending", label: "En cours", icon: Clock, color: "text-slate-500" },
+];
 
 const CATEGORIES = [
   "Tous",
@@ -24,6 +41,7 @@ export default function Actualites() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState<number>(1);
   const [activeCategory, setActiveCategory] = useState<string>("Tous");
+  const [activeStatus, setActiveStatus] = useState<string>("all");
 
   const loadArticles = useCallback(async () => {
     setLoading(true);
@@ -68,16 +86,44 @@ export default function Actualites() {
     setPage(1);
   };
 
+  const handleStatusChange = (status: string) => {
+    setActiveStatus(status);
+    setPage(1);
+  };
+
+  // Compteurs de vérification
+  const stats = useMemo(() => {
+    const verified = articles.filter(
+      (a) => a.status?.toLowerCase() === "verified"
+    ).length;
+    const fake = articles.filter(
+      (a) => a.status?.toLowerCase() === "fake"
+    ).length;
+    const unverified = articles.filter(
+      (a) =>
+        a.status?.toLowerCase() === "unverified" ||
+        a.status?.toLowerCase() === "pending"
+    ).length;
+    return { verified, fake, unverified, total: articles.length };
+  }, [articles]);
+
+  // Filtrage combiné par Catégorie et par Statut de vérification
   const filteredArticles = useMemo(() => {
-    if (activeCategory === "Tous") {
-      return articles;
-    }
-    const cat = activeCategory.toLowerCase();
     return articles.filter((a) => {
-      const articleCat = (a.category || a.source || "").toLowerCase();
-      return articleCat === cat;
+      // Filtre catégorie
+      const matchesCategory =
+        activeCategory === "Tous" ||
+        (a.category || a.source || "").toLowerCase() ===
+          activeCategory.toLowerCase();
+
+      // Filtre statut
+      const currentStatus = (a.status || "pending").toLowerCase();
+      const matchesStatus =
+        activeStatus === "all" || currentStatus === activeStatus.toLowerCase();
+
+      return matchesCategory && matchesStatus;
     });
-  }, [articles, activeCategory]);
+  }, [articles, activeCategory, activeStatus]);
 
   const totalPages = Math.ceil(filteredArticles.length / ITEMS_PER_PAGE);
   const paginated = useMemo(() => {
@@ -95,24 +141,31 @@ export default function Actualites() {
   return (
     <main className="w-full px-4 pb-12 pt-6 sm:px-6">
       <div className="mx-auto w-full max-w-6xl">
-        {/* Titre et rafraîchissement */}
+        {/* En-tête */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="relative inline-block pb-1 text-2xl font-bold text-gray-950 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-16 after:border-b-2 after:border-red-600">
-            Dernières actualités
-          </h2>
+          <div>
+            <h2 className="relative inline-block pb-1 text-2xl font-extrabold text-gray-950 dark:text-white after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-16 after:border-b-2 after:border-red-600">
+              Journaux &amp; Veille d&apos;Information
+            </h2>
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              Vérification des faits, détection des fake news et actualités certifiées.
+            </p>
+          </div>
 
           <button
             type="button"
             onClick={loadArticles}
             disabled={loading}
-            className="inline-flex items-center gap-2 self-start rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm transition hover:bg-gray-50 disabled:opacity-50 sm:self-auto"
+            className="inline-flex items-center gap-2 self-start rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm transition hover:bg-gray-50 disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-gray-300 sm:self-auto"
           >
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
             Actualiser
           </button>
         </div>
 
-        {/* Filtres par catégorie */}
+        
+
+        {/* Filtres par Catégorie */}
         <div className="mb-6 flex flex-wrap gap-2">
           {CATEGORIES.map((cat) => {
             const isActive = activeCategory === cat;
@@ -121,10 +174,10 @@ export default function Actualites() {
                 key={cat}
                 type="button"
                 onClick={() => handleCategoryChange(cat)}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
+                className={`rounded-full px-3.5 py-1 text-xs font-medium transition ${
                   isActive
                     ? "bg-red-600 text-white shadow-sm"
-                    : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-red-600"
+                    : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-red-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-gray-300"
                 }`}
               >
                 {cat}
@@ -139,17 +192,13 @@ export default function Actualites() {
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="flex flex-col overflow-hidden border border-gray-200 bg-white"
+                className="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
               >
-                <div className="aspect-video w-full animate-pulse bg-gray-200" />
+                <div className="aspect-video w-full animate-pulse bg-gray-200 dark:bg-neutral-800" />
                 <div className="space-y-3 p-4">
-                  <div className="h-4 w-20 animate-pulse rounded bg-gray-200" />
-                  <div className="h-5 w-full animate-pulse rounded bg-gray-200" />
-                  <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200" />
-                  <div className="flex gap-4 pt-2">
-                    <div className="h-3 w-16 animate-pulse rounded bg-gray-200" />
-                    <div className="h-3 w-12 animate-pulse rounded bg-gray-200" />
-                  </div>
+                  <div className="h-4 w-20 animate-pulse rounded bg-gray-200 dark:bg-neutral-800" />
+                  <div className="h-5 w-full animate-pulse rounded bg-gray-200 dark:bg-neutral-800" />
+                  <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200 dark:bg-neutral-800" />
                 </div>
               </div>
             ))}
@@ -158,8 +207,8 @@ export default function Actualites() {
 
         {/* État d'erreur */}
         {!loading && error && (
-          <div className="my-8 rounded-lg border border-red-200 bg-red-50 p-6 text-center">
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="my-8 rounded-xl border border-red-200 bg-red-50 p-6 text-center dark:border-red-950 dark:bg-red-950/20">
+            <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
             <button
               type="button"
               onClick={loadArticles}
@@ -171,7 +220,7 @@ export default function Actualites() {
           </div>
         )}
 
-        {/* Liste des articles */}
+        {/* Liste des articles avec badges */}
         {!loading && !error && paginated.length > 0 && (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {paginated.map((article, index) => (
@@ -185,8 +234,9 @@ export default function Actualites() {
 
         {/* Aucun résultat */}
         {!loading && !error && filteredArticles.length === 0 && (
-          <div className="my-12 text-center text-sm text-gray-500">
-            Aucun article trouvé dans la catégorie &ldquo;{activeCategory}&rdquo;.
+          <div className="my-14 rounded-2xl border border-dashed border-gray-200 p-8 text-center text-sm text-gray-500 dark:border-neutral-800">
+            <AlertTriangle className="mx-auto mb-2 text-gray-400" size={28} />
+            Aucun article ne correspond aux filtres sélectionnés.
           </div>
         )}
 
@@ -197,7 +247,7 @@ export default function Actualites() {
               type="button"
               onClick={() => handlePageChange(page - 1)}
               disabled={page === 1}
-              className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 transition hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent"
+              className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 transition hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent dark:border-neutral-800 dark:text-gray-300"
             >
               <ChevronLeft size={16} />
               Précédent
@@ -211,7 +261,7 @@ export default function Actualites() {
                 className={`h-8 w-8 rounded-lg text-sm font-medium transition ${
                   p === page
                     ? "bg-red-600 text-white"
-                    : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                    : "border border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-800"
                 }`}
               >
                 {p}
@@ -222,7 +272,7 @@ export default function Actualites() {
               type="button"
               onClick={() => handlePageChange(page + 1)}
               disabled={page === totalPages}
-              className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 transition hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent"
+              className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 transition hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent dark:border-neutral-800 dark:text-gray-300"
             >
               Suivant
               <ChevronRight size={16} />

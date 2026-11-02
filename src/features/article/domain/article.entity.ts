@@ -1,4 +1,11 @@
-export type ArticleStatus = "pending" | "published" | "rejected" | string;
+export type ArticleStatus =
+  | "pending"
+  | "verified"
+  | "fake"
+  | "unverified"
+  | "published"
+  | "rejected"
+  | string;
 
 export interface ArticleItem {
   id: number;
