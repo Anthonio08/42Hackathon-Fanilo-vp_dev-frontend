@@ -18,7 +18,7 @@ export function Incendie() {
             </p>
             <div className="flex w-full flex-col gap-3">
                 <a
-                    href="/signaler"
+                    href="/incident"
                     className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-bold text-red-600 transition hover:bg-gray-100"
                 >
                     Déclarer un incident
