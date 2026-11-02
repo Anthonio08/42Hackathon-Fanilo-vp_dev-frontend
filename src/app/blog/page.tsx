@@ -1,12 +1,13 @@
-import HomeLayout from "@/features/home/presentation/home-layout"
-import { Footer } from "@/shared/ui/footer"
-import { Navbar } from "@/shared/ui/navbar"
+import { Navbar } from "@/shared/ui/navbar";
+import { Footer } from "@/shared/ui/footer";
+import { EditorialLayout } from "@/features/editorial/presentation/editorial-layout";
 
 export default function BlogPage() {
-    return (
-        <>
-            <Navbar />
-            <Footer />
-        </>
-    )
+  return (
+    <>
+      <Navbar />
+      <EditorialLayout />
+      <Footer />
+    </>
+  );
 }

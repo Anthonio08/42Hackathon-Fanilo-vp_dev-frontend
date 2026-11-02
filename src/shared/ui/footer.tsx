@@ -1,5 +1,6 @@
 
-import { ArrowUpRight } from "lucide-react"
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 export function Footer() {
     return (
@@ -23,27 +24,27 @@ export function Footer() {
 
                     <ul className="flex flex-col gap-4">
                         <li>
-                            <a href="/" className="text-sm text-gray-400 transition hover:text-red-500">
+                            <Link href="/" className="text-sm text-gray-400 transition hover:text-red-500">
                                 Accueil
-                            </a>
+                            </Link>
                         </li>
 
                         <li>
-                            <a href="/actualites" className="text-sm text-gray-400 transition hover:text-red-500">
+                            <Link href="/actualites" className="text-sm text-gray-400 transition hover:text-red-500">
                                 Actualités
-                            </a>
+                            </Link>
                         </li>
 
                         <li>
-                            <a href="/carte" className="text-sm text-gray-400 transition hover:text-red-500">
+                            <Link href="/carte" className="text-sm text-gray-400 transition hover:text-red-500">
                                 Carte des incidents
-                            </a>
+                            </Link>
                         </li>
 
                         <li>
-                            <a href="/blog" className="text-sm text-gray-400 transition hover:text-red-500">
-                                Blog
-                            </a>
+                            <Link href="/blog" className="text-sm text-gray-400 transition hover:text-red-500">
+                                Éditorial
+                            </Link>
                         </li>
                     </ul>
                 </nav>
@@ -54,19 +55,19 @@ export function Footer() {
                     </h2>
 
                     <p className="max-w-xs text-sm leading-6 text-gray-400">
-                        Vous êtes témoin d'un incident ?
-                        Partagez l'information avec la communauté.
+                        Vous êtes témoin d&apos;un incident ?
+                        Partagez l&apos;information avec la communauté.
                     </p>
 
-                    <a
-                        href="/signaler"
+                    <Link
+                        href="/actualites"
                         className="inline-flex items-center gap-2 bg-red-600 px-4 py-3 text-sm font-semibold transition hover:bg-red-700 rounded-2xl"
                     >
-                        Signaler un incident
+                        Explorer les actualités
                         <ArrowUpRight size={17} />
-                    </a>
+                    </Link>
                 </div>
             </div>
         </footer>
-    )
+    );
 }

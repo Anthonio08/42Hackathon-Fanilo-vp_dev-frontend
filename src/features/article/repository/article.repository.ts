@@ -20,7 +20,37 @@ export class ArticleRepositoryImpl implements ArticleRepository {
     try {
       const data = await ArticleDatasource.getAllArticle(params);
       if (Array.isArray(data) && data.length > 0) {
-        return data;
+        let normalized = data.map((item, idx) =>
+          this.normalizeRemoteArticle(item, idx)
+        );
+
+        if (params?.status && params.status !== "Tous" && params.status !== "all") {
+          normalized = normalized.filter(
+            (item) => item.status?.toLowerCase() === params.status?.toLowerCase()
+          );
+        }
+
+        if (params?.category && params.category !== "Tous") {
+          normalized = normalized.filter(
+            (item) =>
+              item.category?.toLowerCase() === params.category?.toLowerCase() ||
+              item.source.toLowerCase() === params.category?.toLowerCase()
+          );
+        }
+
+        if (params?.search) {
+          const query = params.search.toLowerCase();
+          normalized = normalized.filter(
+            (item) =>
+              item.title.toLowerCase().includes(query) ||
+              item.content.toLowerCase().includes(query) ||
+              (item.description && item.description.toLowerCase().includes(query))
+          );
+        }
+
+        // Articles avec images en premier
+        normalized.sort((a, b) => (b.image_url ? 1 : 0) - (a.image_url ? 1 : 0));
+        return normalized;
       }
       return this.getLocalArticles(params);
     } catch (error) {
@@ -44,7 +74,7 @@ export class ArticleRepositoryImpl implements ArticleRepository {
     try {
       const data = await ArticleDatasource.getArticleByID(id);
       if (data) {
-        return data;
+        return this.normalizeRemoteArticle(data, 0);
       }
       return this.getLocalArticleById(id);
     } catch (error) {
@@ -66,6 +96,119 @@ export class ArticleRepositoryImpl implements ArticleRepository {
 
   async getByCategory(category: string): Promise<ArticleItem[]> {
     return this.getAll({ category });
+  }
+
+  private inferCategory(title = "", content = ""): string {
+    const text = `${title} ${content}`.toLowerCase();
+    if (
+      /incendie|feu|pompier|secours|braquage|attaque|police|gendarme|vol|émeute|agression|prison|arme|sécurité/.test(
+        text
+      )
+    ) {
+      return "Sécurité";
+    }
+    if (
+      /route|accident|circulation|embouteillage|taxi|bus|train|transport|véhicule|camion|pont/.test(
+        text
+      )
+    ) {
+      return "Transport";
+    }
+    if (
+      /météo|pluie|cyclone|orage|tempête|inondation|climat|chaleur|sécheresse|vent/.test(
+        text
+      )
+    ) {
+      return "Météo";
+    }
+    if (
+      /santé|hôpital|médecin|paludisme|peste|épidémie|vaccin|eau potable|maladie|urgence/.test(
+        text
+      )
+    ) {
+      return "Santé";
+    }
+    if (
+      /grève|manifestation|concert|match|festival|célébration|foire|élection|conférence|évènement|événement/.test(
+        text
+      )
+    ) {
+      return "Événement";
+    }
+    return "Autres";
+  }
+
+  private categoryColor(
+    cat: string
+  ): "red" | "blue" | "yellow" | "purple" | "green" {
+    switch (cat) {
+      case "Sécurité":
+        return "red";
+      case "Transport":
+        return "yellow";
+      case "Météo":
+        return "blue";
+      case "Santé":
+        return "green";
+      case "Événement":
+        return "purple";
+      default:
+        return "blue";
+    }
+  }
+
+  private normalizeRemoteArticle(raw: ArticleItem, index: number): ArticleItem {
+    const title = raw.title || "Actualité";
+    const content = raw.content || raw.description || "";
+    const category =
+      raw.category || this.inferCategory(title, content) || "Sécurité";
+    const color = raw.color || this.categoryColor(category);
+
+    const formattedDate =
+      raw.date ||
+      (raw.published_at || raw.created_at
+        ? new Date(raw.published_at || raw.created_at).toLocaleDateString(
+            "fr-FR",
+            { day: "numeric", month: "short", year: "numeric" }
+          )
+        : "Récemment");
+
+    const hasExplicitImage = Boolean(
+      (raw.image_url && raw.image_url.trim()) ||
+      (raw.image && raw.image.trim() && raw.image !== "/login-hero.jpg")
+    );
+    const image = hasExplicitImage
+      ? (raw.image || raw.image_url || undefined) ?? undefined
+      : undefined;
+
+    const nbComs =
+      typeof raw.nbComs === "number"
+        ? raw.nbComs
+        : ((typeof raw.id === "number" ? raw.id : index) * 7) % 23 + 4;
+
+    const paragraphs =
+      raw.paragraphs && raw.paragraphs.length > 0
+        ? raw.paragraphs
+        : content
+        ? content.split("\n\n").filter(Boolean)
+        : [title];
+
+    return {
+      ...raw,
+      id: raw.id ?? index + 1,
+      title,
+      content,
+      description: raw.description || content,
+      category,
+      color,
+      image: image || undefined,
+      image_url: raw.image_url ?? null,
+      date: formattedDate,
+      nbComs,
+      paragraphs,
+      source: raw.source || "Google",
+      status: raw.status || "pending",
+    };
   }
 
   private getLocalArticles(params?: ArticleQueryParams): ArticleItem[] {
@@ -124,6 +267,9 @@ export class ArticleRepositoryImpl implements ArticleRepository {
           (item.description && item.description.toLowerCase().includes(query))
       );
     }
+
+    // Articles avec images en premier
+    result.sort((a, b) => (b.image_url ? 1 : 0) - (a.image_url ? 1 : 0));
 
     if (params?.page && params?.limit) {
       const start = (params.page - 1) * params.limit;

@@ -12,7 +12,7 @@ export function Incendie() {
                 Signaler un incident
             </h2>
             <p className="mb-6 max-w-xs text-sm leading-6 text-white/90">
-                Vous êtes témoin d'un incident ?
+                Vous êtes témoin d&apos;un incident ?
                 Partagez les informations avec la communauté
                 et les journalistes.
             </p>

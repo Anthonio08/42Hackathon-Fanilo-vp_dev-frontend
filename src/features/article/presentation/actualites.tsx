@@ -9,7 +9,6 @@ import {
   ChevronRight,
   Clock,
   RefreshCw,
-  ShieldAlert,
 } from "lucide-react";
 import { articleRepository } from "../repository/article.repository";
 import type { ArticleItem } from "../domain/article.entity";
@@ -34,6 +33,20 @@ const CATEGORIES = [
   "Santé",
   "Autres",
 ];
+
+export function TitleComponent({title, description}: {title: string, description:string})
+{
+  return (
+    <div>
+      <h2 className="relative inline-block pb-1 text-2xl font-extrabold text-gray-950 dark:text-white after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-16 after:border-b-2 after:border-red-600">
+        {title}
+      </h2>
+      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+        {description}
+      </p>
+    </div>
+  )
+}
 
 export default function Actualites() {
   const [articles, setArticles] = useState<ArticleItem[]>([]);
@@ -143,15 +156,7 @@ export default function Actualites() {
       <div className="mx-auto w-full max-w-7xl px-6">
         {/* En-tête */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="relative inline-block pb-1 text-2xl font-extrabold text-gray-950 dark:text-white after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-16 after:border-b-2 after:border-red-600">
-              Journaux &amp; Veille d&apos;Information
-            </h2>
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              Vérification des faits, détection des fake news et actualités certifiées.
-            </p>
-          </div>
-
+          <TitleComponent title="Journaux &amp; Veille d&apos;Information" description="Vérification des faits, détection des fake news et actualités certifiées."/>
           <button
             type="button"
             onClick={loadArticles}
@@ -163,6 +168,8 @@ export default function Actualites() {
           </button>
         </div>
 
+
+        {/* Filtres par Catégorie */}
         <div className="mb-6 flex flex-wrap gap-2">
           {CATEGORIES.map((cat) => {
             const isActive = activeCategory === cat;
