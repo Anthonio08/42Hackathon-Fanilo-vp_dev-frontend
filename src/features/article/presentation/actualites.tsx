@@ -139,8 +139,8 @@ export default function Actualites() {
   };
 
   return (
-    <main className="w-full px-4 pb-12 pt-6 sm:px-6">
-      <div className="mx-auto w-full max-w-6xl">
+    <main className="w-full pb-16 pt-8">
+      <div className="mx-auto w-full max-w-7xl px-6">
         {/* En-tête */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -163,9 +163,6 @@ export default function Actualites() {
           </button>
         </div>
 
-        
-
-        {/* Filtres par Catégorie */}
         <div className="mb-6 flex flex-wrap gap-2">
           {CATEGORIES.map((cat) => {
             const isActive = activeCategory === cat;
