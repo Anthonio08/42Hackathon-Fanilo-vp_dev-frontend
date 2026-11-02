@@ -1,5 +1,9 @@
 import type { AuthRepository } from "../domain/auth.repository";
-import { authMock } from "./auth.mock";
+import { apiAuthRepository } from "./auth.api.repository";
 
-// Rehefa mandeha ny back
-export const authRepository: AuthRepository = authMock;
+// Backend branché avec Axios interceptor
+export const authRepository: AuthRepository = apiAuthRepository;
+
+export { apiAuthRepository };
+export { authMock } from "./auth.mock";
+export { AuthDatasource } from "./auth.datasource";
