@@ -15,7 +15,7 @@ export default function ChatWidget() {
       >
         <ChatBot />
       </div>
-
+        
       {/* Bouton flottant */}
       <button
         type="button"
