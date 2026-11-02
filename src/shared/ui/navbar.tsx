@@ -6,9 +6,10 @@ import { Search, UserCircle } from "lucide-react"
 
 const links = [
     { name: "Accueil", href: "/" },
-    { name: "Actualités", href: "/actualites" },
-    { name: "Carte des incidents", href: "/carte" },
-    { name: "Blog", href: "/blog" },
+    { name: "Journaux", href: "/actualites" },
+    { name: "verifier", href: "/verify" },
+    { name: "Carte", href: "/carte" },
+    { name: "Editorial", href: "/blog" },
 ]
 
 export function Navbar() {
