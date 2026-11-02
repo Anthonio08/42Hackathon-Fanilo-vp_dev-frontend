@@ -14,6 +14,7 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FacebookIcon, GoogleIcon } from "../layout/icon";
+import { getEmbedUrl } from "../lib/embed";
 
 export type CardArticle = DomainArticleItem | HomeArticleItem;
 
@@ -115,6 +116,17 @@ export function ArticleCard({
   const isVerified = status?.toLowerCase() === "verified";
   const router = useRouter();
 
+  const sourceUrl =
+    "source_url" in article && typeof article.source_url === "string"
+      ? article.source_url
+      : null;
+
+  const hasValidImage = Boolean(
+    ("image_url" in article && article.image_url && article.image_url.trim()) ||
+    (article.image && article.image.trim() && article.image !== "/login-hero.jpg")
+  );
+  const embedInfo = sourceUrl ? getEmbedUrl(sourceUrl) : null;
+
   const handleCardClick = () => {
     if (onClick) {
       onClick(article);
@@ -144,15 +156,25 @@ export function ArticleCard({
       }`}
     >
       <div className="relative aspect-video w-full overflow-hidden bg-gray-100 dark:bg-neutral-800">
-        <Image
-          src={imageSrc}
-          alt={article.title}
-          loading="eager"
-          fill
-          unoptimized={typeof imageSrc === "string" && imageSrc.startsWith("http")}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition duration-500 group-hover:scale-105"
-        />
+        {!hasValidImage && embedInfo ? (
+          <iframe
+            src={embedInfo.url}
+            title={article.title}
+            className="h-full w-full border-0 pointer-events-none"
+            tabIndex={-1}
+            loading="lazy"
+          />
+        ) : (
+          <Image
+            src={imageSrc}
+            alt={article.title}
+            loading="eager"
+            fill
+            unoptimized={typeof imageSrc === "string" && imageSrc.startsWith("http")}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover transition duration-500 group-hover:scale-105"
+          />
+        )}
 
         {/* Badge Statut en haut à droite (Vérifié / Fake News / etc.)
         <div className="absolute top-2.5 right-2.5 z-10">

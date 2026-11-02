@@ -23,6 +23,7 @@ import {
 import { articleRepository } from "../repository/article.repository";
 import type { ArticleItem } from "../domain/article.entity";
 import { renderStatusBadge } from "@/shared/ui/article_card";
+import { getEmbedUrl } from "@/shared/lib/embed";
 
 interface CommentItem {
   id: number | string;
@@ -237,6 +238,13 @@ export default function ArticleDetail({
     );
   }
 
+  const hasValidImage = Boolean(
+    (article.image_url && article.image_url.trim()) ||
+    (article.image && article.image.trim() && article.image !== "/login-hero.jpg")
+  );
+  const embedInfo = article.source_url ? getEmbedUrl(article.source_url) : null;
+  const useIframe = !hasValidImage && Boolean(embedInfo);
+
   const imageSrc =
     article.image || article.image_url || "/login-hero.jpg";
   const category = article.category || article.source || "Actualité";
@@ -287,34 +295,79 @@ export default function ArticleDetail({
       <div className="grid gap-10 lg:grid-cols-[1fr_340px]">
         {/* Colonne Principale */}
         <article className="min-w-0">
-          {/* Image de couverture avec badges */}
-          <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-gray-100 shadow-sm dark:bg-neutral-800">
-            <Image
-              src={imageSrc}
-              alt={article.title}
-              fill
-              priority
-              unoptimized={
-                typeof imageSrc === "string" && imageSrc.startsWith("http")
-              }
-              sizes="(max-width: 1024px) 100vw, 70vw"
-              className="object-cover"
-            />
-            <div className="absolute left-4 top-4 flex flex-wrap items-center gap-2 z-10">
-              <span className="rounded-lg bg-red-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-md">
-                {category}
-              </span>
-              {article.source && (
-                <span className="rounded-lg bg-black/70 px-2.5 py-1 text-xs font-medium uppercase text-white backdrop-blur-sm">
-                  {article.source}
-                </span>
-              )}
-            </div>
+          {/* Média : Iframe si pas d'image_url et qu'une source_url existe, sinon Image */}
+          {useIframe && embedInfo ? (
+            <div className="space-y-2">
+              <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-gray-200 bg-black shadow-sm dark:border-neutral-800">
+                <iframe
+                  src={embedInfo.url}
+                  title={article.title}
+                  className="h-full w-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+                <div className="pointer-events-none absolute left-4 top-4 flex flex-wrap items-center gap-2 z-10">
+                  <span className="rounded-lg bg-red-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-md">
+                    {category}
+                  </span>
+                  {article.source && (
+                    <span className="rounded-lg bg-black/70 px-2.5 py-1 text-xs font-medium uppercase text-white backdrop-blur-sm">
+                      {article.source}
+                    </span>
+                  )}
+                </div>
 
-            <div className="absolute right-4 top-4 z-10">
-              {renderStatusBadge(article.status)}
+                <div className="pointer-events-none absolute right-4 top-4 z-10">
+                  {renderStatusBadge(article.status)}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 px-1">
+                <span className="flex items-center gap-1.5">
+                  Contenu intégré depuis : <span className="font-semibold text-gray-700 dark:text-gray-200 uppercase">{article.source || embedInfo.type}</span>
+                </span>
+                {article.source_url && (
+                  <a
+                    href={article.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-red-600 hover:underline font-medium"
+                  >
+                    Ouvrir la publication originale
+                    <ExternalLink size={12} />
+                  </a>
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-gray-100 shadow-sm dark:bg-neutral-800">
+              <Image
+                src={imageSrc}
+                alt={article.title}
+                fill
+                priority
+                unoptimized={
+                  typeof imageSrc === "string" && imageSrc.startsWith("http")
+                }
+                sizes="(max-width: 1024px) 100vw, 70vw"
+                className="object-cover"
+              />
+              <div className="absolute left-4 top-4 flex flex-wrap items-center gap-2 z-10">
+                <span className="rounded-lg bg-red-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-md">
+                  {category}
+                </span>
+                {article.source && (
+                  <span className="rounded-lg bg-black/70 px-2.5 py-1 text-xs font-medium uppercase text-white backdrop-blur-sm">
+                    {article.source}
+                  </span>
+                )}
+              </div>
+
+              <div className="absolute right-4 top-4 z-10">
+                {renderStatusBadge(article.status)}
+              </div>
+            </div>
+          )}
 
           {/* Titre de l'article */}
           <h1 className="mt-6 text-2xl font-extrabold leading-tight text-gray-950 dark:text-white sm:text-3xl">
