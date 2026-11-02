@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { CardArticle } from "@/shared/ui/article_card";
 import { renderStatusBadge } from "@/shared/ui/article_card";
+import { getEmbedUrl } from "@/shared/lib/embed";
 
 interface ArticleComment {
   id: string;
@@ -64,6 +65,18 @@ export function ArticleModal({ article, onClose }: ArticleModalProps) {
 
   if (!article) return null;
 
+  const sourceUrl =
+    "source_url" in article && typeof article.source_url === "string"
+      ? article.source_url
+      : null;
+
+  const hasValidImage = Boolean(
+    ("image_url" in article && article.image_url && article.image_url.trim()) ||
+    (article.image && article.image.trim() && article.image !== "/login-hero.jpg")
+  );
+  const embedInfo = sourceUrl ? getEmbedUrl(sourceUrl) : null;
+  const useIframe = !hasValidImage && Boolean(embedInfo);
+
   const imageSrc =
     article.image ||
     ("image_url" in article && article.image_url) ||
@@ -94,11 +107,6 @@ export function ArticleModal({ article, onClose }: ArticleModalProps) {
     ("source" in article && article.source
       ? `Source: ${article.source}`
       : "Rédaction IFM");
-
-  const sourceUrl =
-    "source_url" in article && typeof article.source_url === "string"
-      ? article.source_url
-      : null;
 
   const status = "status" in article ? article.status : undefined;
 
@@ -191,16 +199,28 @@ export function ArticleModal({ article, onClose }: ArticleModalProps) {
 
         {/* Corps défilable */}
         <div className="overflow-y-auto px-6 py-6 sm:px-8">
-          {/* Image de couverture */}
-          <div className="relative mb-6 aspect-video w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-neutral-800">
-            <Image
-              src={imageSrc}
-              alt={article.title}
-              fill
-              unoptimized={typeof imageSrc === "string" && imageSrc.startsWith("http")}
-              className="object-cover"
-            />
-          </div>
+          {/* Média : Iframe si pas d'image_url et qu'une source_url existe, sinon Image */}
+          {useIframe && embedInfo ? (
+            <div className="relative mb-6 aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-black dark:border-neutral-800">
+              <iframe
+                src={embedInfo.url}
+                title={article.title}
+                className="h-full w-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <div className="relative mb-6 aspect-video w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-neutral-800">
+              <Image
+                src={imageSrc}
+                alt={article.title}
+                fill
+                unoptimized={typeof imageSrc === "string" && imageSrc.startsWith("http")}
+                className="object-cover"
+              />
+            </div>
+          )}
 
           {/* Métadonnées de publication */}
           <div className="mb-4 flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">

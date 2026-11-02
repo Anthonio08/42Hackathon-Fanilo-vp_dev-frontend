@@ -48,6 +48,8 @@ export class ArticleRepositoryImpl implements ArticleRepository {
           );
         }
 
+        // Articles avec images en premier
+        normalized.sort((a, b) => (b.image_url ? 1 : 0) - (a.image_url ? 1 : 0));
         return normalized;
       }
       return this.getLocalArticles(params);
@@ -171,7 +173,13 @@ export class ArticleRepositoryImpl implements ArticleRepository {
           )
         : "Récemment");
 
-    const image = raw.image || raw.image_url || "/login-hero.jpg";
+    const hasExplicitImage = Boolean(
+      (raw.image_url && raw.image_url.trim()) ||
+      (raw.image && raw.image.trim() && raw.image !== "/login-hero.jpg")
+    );
+    const image = hasExplicitImage
+      ? (raw.image || raw.image_url || undefined) ?? undefined
+      : undefined;
 
     const nbComs =
       typeof raw.nbComs === "number"
@@ -193,8 +201,8 @@ export class ArticleRepositoryImpl implements ArticleRepository {
       description: raw.description || content,
       category,
       color,
-      image,
-      image_url: raw.image_url || image,
+      image: image || undefined,
+      image_url: raw.image_url ?? null,
       date: formattedDate,
       nbComs,
       paragraphs,
@@ -259,6 +267,9 @@ export class ArticleRepositoryImpl implements ArticleRepository {
           (item.description && item.description.toLowerCase().includes(query))
       );
     }
+
+    // Articles avec images en premier
+    result.sort((a, b) => (b.image_url ? 1 : 0) - (a.image_url ? 1 : 0));
 
     if (params?.page && params?.limit) {
       const start = (params.page - 1) * params.limit;
