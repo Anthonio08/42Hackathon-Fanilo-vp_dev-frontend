@@ -246,6 +246,16 @@ export function ArticleModal({ article, onClose }: ArticleModalProps) {
               </a>
             )}
 
+            {"id" in article && article.id !== undefined && (
+              <a
+                href={`/actualites/${article.id}`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-200"
+              >
+                Page complète
+                <ExternalLink size={13} />
+              </a>
+            )}
+
             <button
               type="button"
               onClick={handleShare}
