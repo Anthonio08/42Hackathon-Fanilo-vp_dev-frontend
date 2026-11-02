@@ -1,0 +1,73 @@
+export const points = [
+  // ─── Sécurité ───
+  { id: "s1", position: [-18.8792, 47.5079], label: "Vol à main armée", category: "Sécurité", color: "#e11d48" },
+  { id: "s2", position: [-18.9137, 47.5361], label: "Bagarre de quartier", category: "Sécurité", color: "#e11d48" },
+  { id: "s3", position: [-18.8543, 47.4912], label: "Effraction boutique", category: "Sécurité", color: "#e11d48" },
+  { id: "s4", position: [-18.9321, 47.5189], label: "Menaces sur piéton", category: "Sécurité", color: "#e11d48" },
+  { id: "s5", position: [-18.8678, 47.5234], label: "Trafic de drogue signalé", category: "Sécurité", color: "#e11d48" },
+  { id: "s6", position: [-18.9456, 47.4876], label: "Cambriolage maison", category: "Sécurité", color: "#e11d48" },
+  { id: "s7", position: [-18.8412, 47.5456], label: "Rixe bar", category: "Sécurité", color: "#e11d48" },
+  { id: "s8", position: [-18.9234, 47.5567], label: "Agression nocturne", category: "Sécurité", color: "#e11d48" },
+  { id: "s9", position: [-18.8891, 47.4789], label: "Arnaque au faux policier", category: "Sécurité", color: "#e11d48" },
+  { id: "s10", position: [-18.9567, 47.5234], label: "Vol de moto", category: "Sécurité", color: "#e11d48" },
+
+  // ─── Transport ───
+  { id: "t1", position: [-18.8823, 47.5123], label: "Accident 2 voitures", category: "Transport", color: "#2563eb" },
+  { id: "t2", position: [-18.9012, 47.5432], label: "Panne de feu tricolore", category: "Transport", color: "#2563eb" },
+  { id: "t3", position: [-18.8654, 47.4987], label: "Tramway en panne", category: "Transport", color: "#2563eb" },
+  { id: "t4", position: [-18.9345, 47.5012], label: "Accident moto-camion", category: "Transport", color: "#2563eb" },
+  { id: "t5", position: [-18.8765, 47.5345], label: "Feu de bus en circulation", category: "Transport", color: "#2563eb" },
+  { id: "t6", position: [-18.9432, 47.5456], label: "Roue de camion détachée", category: "Transport", color: "#2563eb" },
+  { id: "t7", position: [-18.8567, 47.5123], label: "Dépassement dangereux signalé", category: "Transport", color: "#2563eb" },
+  { id: "t8", position: [-18.9234, 47.4876], label: "Pneus cloués route", category: "Transport", color: "#2563eb" },
+  { id: "t9", position: [-18.8901, 47.5567], label: "Collision carrefour", category: "Transport", color: "#2563eb" },
+  { id: "t10", position: [-18.9123, 47.4765], label: "Bus scolaire immobilisé", category: "Transport", color: "#2563eb" },
+
+  // ─── Météo ───
+  { id: "m1", position: [-18.8712, 47.5234], label: "Inondation rue", category: "Météo", color: "#f59e0b" },
+  { id: "m2", position: [-18.9345, 47.5123], label: "Chute d'arbre orage", category: "Météo", color: "#f59e0b" },
+  { id: "m3", position: [-18.8567, 47.4987], label: "Coupure électricité orage", category: "Météo", color: "#f59e0b" },
+  { id: "m4", position: [-18.9123, 47.5456], label: "Glissade de terrain", category: "Météo", color: "#f59e0b" },
+  { id: "m5", position: [-18.8834, 47.4765], label: "Rafales de vent fortes", category: "Météo", color: "#f59e0b" },
+  { id: "m6", position: [-18.9456, 47.5345], label: "Foudre sur transformateur", category: "Météo", color: "#f59e0b" },
+  { id: "m7", position: [-18.8678, 47.5567], label: "Ruissellement avenue", category: "Météo", color: "#f59e0b" },
+  { id: "m8", position: [-18.9234, 47.4901], label: "Coupure eau crue inondation", category: "Météo", color: "#f59e0b" },
+  { id: "m9", position: [-18.8901, 47.5234], label: "Chute de grêle signalée", category: "Météo", color: "#f59e0b" },
+  { id: "m10", position: [-18.9567, 47.4876], label: "Vague de chaleur alerte", category: "Météo", color: "#f59e0b" },
+
+  // ─── Événement ───
+  { id: "e1", position: [-18.8792, 47.5123], label: "Manifestation rue principale", category: "Événement", color: "#8b5cf6" },
+  { id: "e2", position: [-18.9012, 47.5345], label: "Fête locale fermeture route", category: "Événement", color: "#8b5cf6" },
+  { id: "e3", position: [-18.8567, 47.5456], label: "Concert stade", category: "Événement", color: "#8b5cf6" },
+  { id: "e4", position: [-18.9345, 47.5012], label: "Marché forain week-end", category: "Événement", color: "#8b5cf6" },
+  { id: "e5", position: [-18.8834, 47.4876], label: "Course à pied fermeture rue", category: "Événement", color: "#8b5cf6" },
+  { id: "e6", position: [-18.9123, 47.5567], label: "Défilé militaire", category: "Événement", color: "#8b5cf6" },
+  { id: "e7", position: [-18.8678, 47.5234], label: "Festival musique", category: "Événement", color: "#8b5cf6" },
+  { id: "e8", position: [-18.9456, 47.4987], label: "Tournoi football", category: "Événement", color: "#8b5cf6" },
+  { id: "e9", position: [-18.8901, 47.5345], label: "Salon professionnel", category: "Événement", color: "#8b5cf6" },
+  { id: "e10", position: [-18.9234, 47.4765], label: "Procession religieuse", category: "Événement", color: "#8b5cf6" },
+
+  // ─── Santé ───
+  { id: "h1", position: [-18.8765, 47.5234], label: "Épidémie choléra signalée", category: "Santé", color: "#10b981" },
+  { id: "h2", position: [-18.9123, 47.5456], label: "Ambulance immobilisée", category: "Santé", color: "#10b981" },
+  { id: "h3", position: [-18.8567, 47.5012], label: "Manque de médicaments hôpital", category: "Santé", color: "#10b981" },
+  { id: "h4", position: [-18.9345, 47.5345], label: "Cas de dengue cluster", category: "Santé", color: "#10b981" },
+  { id: "h5", position: [-18.8834, 47.4876], label: "Intoxication alimentaire collective", category: "Santé", color: "#10b981" },
+  { id: "h6", position: [-18.9012, 47.5567], label: "Panne oxygène clinique", category: "Santé", color: "#10b981" },
+  { id: "h7", position: [-18.8678, 47.5456], label: "Accident de travail usine", category: "Santé", color: "#10b981" },
+  { id: "h8", position: [-18.9456, 47.5123], label: "Dépistage gratuit organisé", category: "Santé", color: "#10b981" },
+  { id: "h9", position: [-18.8901, 47.5234], label: "Surcharge urgences hôpital", category: "Santé", color: "#10b981" },
+  { id: "h10", position: [-18.9234, 47.4901], label: "Incendie pharmacie", category: "Santé", color: "#10b981" },
+
+  // ─── Autres ───
+  { id: "x1", position: [-18.8792, 47.5012], label: "Coupure internet quartier", category: "Autres", color: "#6b7280" },
+  { id: "x2", position: [-18.9123, 47.5234], label: "Fuite d'eau réseau", category: "Autres", color: "#6b7280" },
+  { id: "x3", position: [-18.8567, 47.5345], label: "Odeur suspecte signalée", category: "Autres", color: "#6b7280" },
+  { id: "x4", position: [-18.9345, 47.4876], label: "Panne ascenseur immeuble", category: "Autres", color: "#6b7280" },
+  { id: "x5", position: [-18.8834, 47.5456], label: "Dépôt sauvage d'ordures", category: "Autres", color: "#6b7280" },
+  { id: "x6", position: [-18.9012, 47.4987], label: "Fuite de gaz signalée", category: "Autres", color: "#6b7280" },
+  { id: "x7", position: [-18.8678, 47.5123], label: "Coupure téléphone zone", category: "Autres", color: "#6b7280" },
+  { id: "x8", position: [-18.9456, 47.5345], label: "Nid de poule dangereux", category: "Autres", color: "#6b7280" },
+  { id: "x9", position: [-18.8901, 47.4765], label: "Câble électrique au sol", category: "Autres", color: "#6b7280" },
+  { id: "x10", position: [-18.9234, 47.5567], label: "Animal dangereux en liberté", category: "Autres", color: "#6b7280" },
+] as const; 
