@@ -6,11 +6,12 @@ import {
   AlertOctagon,
   AlertTriangle,
   ArrowRight,
+  Building2,
   CheckCircle2,
   ExternalLink,
-  Globe,
   HelpCircle,
   History,
+  Landmark,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
@@ -20,6 +21,11 @@ import type {
   VerificationSource,
   VerificationVerdict,
 } from "../domain/verification.entity";
+import {
+  analyzeOfficialStatus,
+  isSourceOfficial,
+  type OfficialAnalysis,
+} from "../domain/official-analysis";
 import { FacebookIcon, GoogleIcon } from "@/shared/layout/icon";
 import { TitleComponent } from "@/features/article/presentation/actualites";
 
@@ -175,9 +181,9 @@ export function VerifyLayout() {
   };
 
   const verdictInfo = result ? getVerdictInfo(result.verdict) : null;
-  const confidencePercent = result
-    ? Math.round(result.confidence_score * 100)
-    : 0;
+  const officialAnalysis: OfficialAnalysis | null = result
+    ? result.official_analysis || analyzeOfficialStatus(result)
+    : null;
 
   return (
     <main className="w-full pb-16 pt-8">
@@ -271,19 +277,25 @@ export function VerifyLayout() {
         </div>
 
         {/* Résultat de la vérification */}
-        {result && verdictInfo && (
+        {result && verdictInfo && officialAnalysis && (
           <section className="mt-8 space-y-6">
             <div
               className={`rounded-2xl border p-6 shadow-sm transition ${verdictInfo.bgClass}`}
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide shadow-sm ${verdictInfo.badgeClass}`}
                     >
                       <verdictInfo.icon size={14} />
                       {verdictInfo.title}
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide shadow-sm ${officialAnalysis.badge_class}`}
+                    >
+                      <Landmark size={13} />
+                      {officialAnalysis.badge_title}
                     </span>
                     <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
                       &middot; {verdictInfo.label}
@@ -293,53 +305,135 @@ export function VerifyLayout() {
                   <h2 className="text-xl font-extrabold text-gray-950 dark:text-white">
                     &laquo; {result.claim_text} &raquo;
                   </h2>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                  <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
                     {result.analysis_summary}
                   </p>
                 </div>
-
-                {/* Score de confiance
-                <div className="flex sm:flex-col items-center sm:items-end justify-between border-t border-gray-200/60 pt-3 sm:border-0 sm:pt-0">
-                  <span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    Confiance
-                  </span>
-                  <div className="text-2xl font-black text-gray-950 dark:text-white">
-                    {confidencePercent}%
-                  </div>
-                  <div className="mt-1 h-2 w-28 overflow-hidden rounded-full bg-gray-200 dark:bg-neutral-700">
-                    <div
-                      className="h-full rounded-full bg-red-600 transition-all duration-700"
-                      style={{ width: `${confidencePercent}%` }}
-                    />
-                  </div>
-                </div> */}
               </div>
 
-              {/* Compteurs de sources */}
-              <div className="mt-6 grid grid-cols-3 gap-3 border-t border-gray-200/80 pt-4 dark:border-neutral-800">
-                <div className="rounded-xl bg-white/80 p-3 text-center dark:bg-neutral-900/80">
-                  <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400">
-                    Sources trouvées
-                  </p>
-                  <p className="text-lg font-bold text-gray-900 dark:text-white">
-                    {result.sources_found}
-                  </p>
+              {/* Encadré d'Officialité & Convergence des faits */}
+              <div
+                className={`mt-5 rounded-xl border p-4.5 ${officialAnalysis.bg_class} ${officialAnalysis.border_class}`}
+              >
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`shrink-0 rounded-lg p-2.5 shadow-sm bg-white/90 dark:bg-neutral-900/90 ${officialAnalysis.text_class}`}
+                    >
+                      {officialAnalysis.is_official ? (
+                        <ShieldCheck size={22} />
+                      ) : (
+                        <AlertOctagon size={22} />
+                      )}
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4
+                          className={`text-sm font-bold tracking-tight ${officialAnalysis.text_class}`}
+                        >
+                          {officialAnalysis.label}
+                        </h4>
+                        <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold text-gray-700 shadow-xs dark:bg-neutral-800/80 dark:text-gray-300">
+                          {officialAnalysis.official_sources_count} source
+                          {officialAnalysis.official_sources_count > 1 ? "s" : ""}{" "}
+                          institutionnelle
+                          {officialAnalysis.official_sources_count > 1 ? "s" : ""}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs leading-relaxed text-gray-700 dark:text-gray-300">
+                        {officialAnalysis.summary}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Jauge d'officialité */}
+                  <div className="flex flex-row items-center justify-between gap-3 border-t border-gray-200/50 pt-3 md:flex-col md:items-end md:border-t-0 md:pt-0">
+                    <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400">
+                      Indice d&apos;officialité
+                    </span>
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-2.5 w-24 overflow-hidden rounded-full bg-gray-200 dark:bg-neutral-700">
+                        <div
+                          className={`h-full rounded-full transition-all duration-700 ${
+                            officialAnalysis.status === "official_confirmed"
+                              ? "bg-emerald-600"
+                              : officialAnalysis.status === "high_corroboration"
+                              ? "bg-blue-600"
+                              : officialAnalysis.status === "officially_refuted"
+                              ? "bg-rose-600"
+                              : "bg-amber-500"
+                          }`}
+                          style={{ width: `${officialAnalysis.official_score}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-black text-gray-950 dark:text-white">
+                        {officialAnalysis.official_score}%
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="rounded-xl bg-emerald-100/60 p-3 text-center dark:bg-emerald-950/40">
-                  <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
-                    Confirmantes
-                  </p>
-                  <p className="text-lg font-black text-emerald-700 dark:text-emerald-400">
-                    {result.sources_supporting}
-                  </p>
+              </div>
+
+              {/* Statistiques des résultats et volume de liens */}
+              <div className="mt-5 border-t border-gray-200/80 pt-4 dark:border-neutral-800">
+                <div className="mb-2.5 flex items-center justify-between">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                    Statistiques des résultats &amp; volume de liens
+                  </span>
+                  <span className="text-[11px] text-gray-400">
+                    {officialAnalysis.web_links_count} web &middot;{" "}
+                    {officialAnalysis.facebook_links_count} réseaux sociaux
+                  </span>
                 </div>
-                <div className="rounded-xl bg-rose-100/60 p-3 text-center dark:bg-rose-950/40">
-                  <p className="text-[11px] font-bold text-rose-800 dark:text-rose-300">
-                    Contredisantes
-                  </p>
-                  <p className="text-lg font-black text-rose-700 dark:text-rose-400">
-                    {result.sources_contradicting}
-                  </p>
+
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <div className="rounded-xl bg-white/80 p-3 text-center shadow-xs dark:bg-neutral-900/80">
+                    <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400">
+                      Total liens analysés
+                    </p>
+                    <p className="text-xl font-black text-gray-950 dark:text-white">
+                      {officialAnalysis.total_links_count}
+                    </p>
+                    <p className="text-[10px] text-gray-400">
+                      Google &amp; Facebook
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-blue-100/60 p-3 text-center shadow-xs dark:bg-blue-950/40">
+                    <p className="text-[11px] font-bold text-blue-800 dark:text-blue-300">
+                      Sources officielles
+                    </p>
+                    <p className="text-xl font-black text-blue-700 dark:text-blue-300">
+                      {officialAnalysis.official_sources_count}
+                    </p>
+                    <p className="text-[10px] text-blue-600/80 dark:text-blue-400/80">
+                      Institutions / Décrets
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-emerald-100/60 p-3 text-center shadow-xs dark:bg-emerald-950/40">
+                    <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+                      Sources confirmantes
+                    </p>
+                    <p className="text-xl font-black text-emerald-700 dark:text-emerald-400">
+                      {officialAnalysis.corroborating_links_count}
+                    </p>
+                    <p className="text-[10px] text-emerald-600/80 dark:text-emerald-400/80">
+                      Faits corroborés
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-rose-100/60 p-3 text-center shadow-xs dark:bg-rose-950/40">
+                    <p className="text-[11px] font-bold text-rose-800 dark:text-rose-300">
+                      Sources contredisantes
+                    </p>
+                    <p className="text-xl font-black text-rose-700 dark:text-rose-400">
+                      {officialAnalysis.contradicting_links_count}
+                    </p>
+                    <p className="text-[10px] text-rose-600/80 dark:text-rose-400/80">
+                      Contradictions
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -358,14 +452,19 @@ export function VerifyLayout() {
               <div className="space-y-3">
                 {result.sources.map((src: VerificationSource) => {
                   const isFacebook = src.source_type?.toLowerCase() === "facebook";
+                  const isOfficial = isSourceOfficial(src);
                   return (
                     <div
                       key={src.id}
-                      className="group rounded-xl border border-gray-100 p-4 transition hover:border-gray-300 hover:bg-gray-50/70 dark:border-neutral-800 dark:hover:bg-neutral-850"
+                      className={`group rounded-xl border p-4 transition ${
+                        isOfficial
+                          ? "border-blue-200 bg-blue-50/30 hover:border-blue-400 hover:bg-blue-50/60 dark:border-blue-900/60 dark:bg-blue-950/10 dark:hover:bg-blue-950/20"
+                          : "border-gray-100 hover:border-gray-300 hover:bg-gray-50/70 dark:border-neutral-800 dark:hover:bg-neutral-850"
+                      }`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
-                          <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                          <div className="mb-1.5 flex flex-wrap items-center gap-2">
                             <span
                               className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[10px] font-bold uppercase ${
                                 isFacebook
@@ -376,6 +475,12 @@ export function VerifyLayout() {
                               {isFacebook ? <FacebookIcon size={10} /> : <GoogleIcon size={10} />}
                               {src.source_type}
                             </span>
+
+                            {isOfficial && (
+                              <span className="inline-flex items-center gap-1 rounded bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
+                                <Building2 size={10} /> Source Officielle / Institutionnelle
+                              </span>
+                            )}
 
                             {src.supports_claim === true && (
                               <span className="inline-flex items-center gap-1 rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
@@ -441,6 +546,7 @@ export function VerifyLayout() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {history.map((item) => {
               const info = getVerdictInfo(item.verdict);
+              const itemOfficial = item.official_analysis || analyzeOfficialStatus(item);
               return (
                 <div
                   key={item.id}
@@ -449,11 +555,19 @@ export function VerifyLayout() {
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${info.badgeClass}`}
-                      >
-                        {info.title}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${info.badgeClass}`}
+                        >
+                          {info.title}
+                        </span>
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${itemOfficial.badge_class}`}
+                        >
+                          <Landmark size={9} />
+                          {itemOfficial.badge_title}
+                        </span>
+                      </div>
                       <span className="text-[11px] text-gray-400">
                         {new Date(item.created_at).toLocaleDateString("fr-FR")}
                       </span>
@@ -468,7 +582,9 @@ export function VerifyLayout() {
                   </div>
 
                   <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 text-[11px] text-gray-500 dark:border-neutral-800 dark:text-gray-400">
-                    <span>{item.sources_found} sources</span>
+                    <span>
+                      {itemOfficial.total_links_count} liens ({itemOfficial.official_sources_count} off.)
+                    </span>
                     <span className="font-semibold text-red-600 flex items-center gap-1 group-hover:translate-x-1">
                       Voir le rapport <ArrowRight size={12} />
                     </span>

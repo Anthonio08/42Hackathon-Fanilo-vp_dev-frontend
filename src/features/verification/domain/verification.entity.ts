@@ -1,3 +1,5 @@
+import type { OfficialAnalysis } from "./official-analysis";
+
 export type VerificationVerdict =
   | "true"
   | "likely_true"
@@ -30,6 +32,7 @@ export interface VerificationItem {
   sources_contradicting: number;
   sources: VerificationSource[];
   created_at: string;
+  official_analysis?: OfficialAnalysis;
 }
 
 export interface VerifyClaimRequest {
