@@ -10,6 +10,7 @@ import {
   Globe,
   LayoutDashboard,
   LogOut,
+  Menu,
   Moon,
   Search,
   Sparkles,
@@ -61,6 +62,31 @@ function statusBadge(status?: string) {
   }
 }
 
+function toLocalResults(q: string): ArticleItem[] {
+  const lowerQ = q.toLowerCase();
+  return localArticles
+    .filter(
+      (item) =>
+        item.title.toLowerCase().includes(lowerQ) ||
+        item.description.toLowerCase().includes(lowerQ)
+    )
+    .slice(0, 10)
+    .map((item, idx) => ({
+      id: idx + 1,
+      title: item.title,
+      content: item.description,
+      source: item.category,
+      source_url: "",
+      author: null,
+      image_url: item.image,
+      status: "pending",
+      collected_by_id: 1,
+      published_at: item.date,
+      collected_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    }));
+}
+
 function SearchModal({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<ArticleItem[]>([]);
@@ -101,59 +127,14 @@ function SearchModal({ onClose }: { onClose: () => void }) {
           if (response && Array.isArray(response.articles) && response.articles.length > 0) {
             setResults(response.articles);
           } else {
-            // Fallback recherche dans les données locales
-            const lowerQ = q.toLowerCase();
-            const filteredLocal: ArticleItem[] = localArticles
-              .filter(
-                (item) =>
-                  item.title.toLowerCase().includes(lowerQ) ||
-                  item.description.toLowerCase().includes(lowerQ)
-              )
-              .slice(0, 10)
-              .map((item, idx) => ({
-                id: idx + 1,
-                title: item.title,
-                content: item.description,
-                source: item.category,
-                source_url: "",
-                author: null,
-                image_url: item.image,
-                status: "pending",
-                collected_by_id: 1,
-                published_at: item.date,
-                collected_at: new Date().toISOString(),
-                created_at: new Date().toISOString(),
-              }));
-            setResults(filteredLocal);
+            setResults(toLocalResults(q));
           }
           setLoading(false);
         }
       } catch (err) {
         if (!cancelled) {
           console.warn("Erreur recherche API news, fallback local:", err);
-          const lowerQ = q.toLowerCase();
-          const filteredLocal: ArticleItem[] = localArticles
-            .filter(
-              (item) =>
-                item.title.toLowerCase().includes(lowerQ) ||
-                item.description.toLowerCase().includes(lowerQ)
-            )
-            .slice(0, 10)
-            .map((item, idx) => ({
-              id: idx + 1,
-              title: item.title,
-              content: item.description,
-              source: item.category,
-              source_url: "",
-              author: null,
-              image_url: item.image,
-              status: "pending",
-              collected_by_id: 1,
-              published_at: item.date,
-              collected_at: new Date().toISOString(),
-              created_at: new Date().toISOString(),
-            }));
-          setResults(filteredLocal);
+          setResults(toLocalResults(q));
           setLoading(false);
         }
       }
@@ -183,9 +164,8 @@ function SearchModal({ onClose }: { onClose: () => void }) {
       startTransition(() => {
         if (res && Array.isArray(res.articles)) {
           setResults((prev) => {
-            const newIds = new Set(prev.map((item) => item.id));
-            const merged = [...res.articles.filter((a) => !newIds.has(a.id)), ...prev];
-            return merged;
+            const existingIds = new Set(prev.map((item) => item.id));
+            return [...res.articles.filter((a) => !existingIds.has(a.id)), ...prev];
           });
           setCollectMessage(
             `${res.collected_count} article(s) collecté(s) depuis Google et Facebook !`
@@ -204,14 +184,14 @@ function SearchModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 pt-20 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 pt-16 backdrop-blur-sm sm:pt-20"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label="Recherche et veille de news"
     >
       <div
-        className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800"
+        className="w-full max-w-2xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-neutral-800 dark:bg-neutral-900"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Barre de recherche */}
@@ -222,7 +202,7 @@ function SearchModal({ onClose }: { onClose: () => void }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Rechercher des news (ex: élections, grève, météo…)"
-            className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white"
+            className="min-w-0 flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white"
           />
           {query && (
             <button
@@ -245,7 +225,7 @@ function SearchModal({ onClose }: { onClose: () => void }) {
 
         {/* Action de collecte en direct */}
         {query.trim().length >= 2 && (
-          <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/70 px-4 py-2.5 text-xs dark:border-neutral-800 dark:bg-neutral-800/40">
+          <div className="flex flex-col gap-2 border-b border-gray-100 bg-gray-50/70 px-4 py-2.5 text-xs dark:border-neutral-800 dark:bg-neutral-800/40 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-gray-600 dark:text-gray-400">
               Veille Google &amp; Facebook pour &laquo;&nbsp;{query}&nbsp;&raquo;
             </span>
@@ -253,7 +233,7 @@ function SearchModal({ onClose }: { onClose: () => void }) {
               type="button"
               onClick={handleCollect}
               disabled={collecting}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1 font-semibold text-white shadow-sm transition hover:bg-red-700 disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-red-600 px-3 py-1 font-semibold text-white shadow-sm transition hover:bg-red-700 disabled:opacity-60"
             >
               <Sparkles size={13} className={collecting ? "animate-spin" : ""} />
               {collecting ? "Collecte en cours…" : "Collecter en direct"}
@@ -269,7 +249,7 @@ function SearchModal({ onClose }: { onClose: () => void }) {
         )}
 
         {/* Liste des résultats */}
-        <ul className="max-h-96 overflow-y-auto py-2 divide-y divide-gray-100 dark:divide-neutral-800">
+        <ul className="max-h-[60vh] divide-y divide-gray-100 overflow-y-auto py-2 dark:divide-neutral-800 sm:max-h-96">
           {loading && (
             <li className="flex items-center justify-center gap-2 px-4 py-8 text-sm text-gray-500">
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
@@ -304,9 +284,9 @@ function SearchModal({ onClose }: { onClose: () => void }) {
             results.map((article) => (
               <li key={article.id} className="transition hover:bg-gray-50 dark:hover:bg-neutral-800/60">
                 <div className="flex items-start justify-between gap-3 px-4 py-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <span className="inline-block uppercase tracking-wider text-[10px] font-bold text-red-600 dark:text-red-400">
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex flex-wrap items-center gap-2">
+                      <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400">
                         {article.source || "News"}
                       </span>
                       {statusBadge(article.status)}
@@ -316,10 +296,10 @@ function SearchModal({ onClose }: { onClose: () => void }) {
                         </span>
                       )}
                     </div>
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1">
+                    <h4 className="line-clamp-1 text-sm font-semibold text-gray-900 dark:text-white">
                       {article.title}
                     </h4>
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                    <p className="mt-1 line-clamp-2 text-xs text-gray-500 dark:text-gray-400">
                       {article.content || article.description}
                     </p>
                   </div>
@@ -368,6 +348,7 @@ export function Navbar() {
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   // État du thème avec initialisation différée
@@ -378,6 +359,7 @@ export function Navbar() {
     if (isDark) {
       document.documentElement.classList.add("dark");
     }
+    setDark(isDark);
   }, []);
 
   // Synchronisation de l'authentification avec useSyncExternalStore
@@ -422,26 +404,27 @@ export function Navbar() {
   const handleLogout = () => {
     authStorage.clearAuth();
     setProfileOpen(false);
+    setMobileOpen(false);
     router.push("/");
   };
 
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 md:py-4">
           {/* Logo */}
-          <div className="flex items-center gap-6 justify-center">
+          <div className="flex items-center justify-center gap-6">
             <Link href="/" className="text-2xl font-extrabold tracking-tight text-black dark:text-white">
               Fanilo <span className="text-red-600">.</span>
             </Link>
-            <p className="hidden border-l border-gray-300 pl-6 pt-1 text-sm font-medium text-gray-500 dark:border-neutral-700 md:block">
+            <p className="hidden border-l border-gray-300 pl-6 pt-1 text-sm font-medium text-gray-500 dark:border-neutral-700 lg:block">
               Informer &middot; Signaler &middot; Agir
             </p>
           </div>
 
-          {/* Navigation */}
+          {/* Navigation desktop */}
           <nav className="hidden md:block">
-            <ul className="flex items-center gap-8">
+            <ul className="flex items-center gap-6 lg:gap-8">
               {links.map((link) => {
                 const isActive = pathname === link.href;
 
@@ -469,7 +452,7 @@ export function Navbar() {
           </nav>
 
           {/* Actions à droite */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {/* Bouton recherche */}
             <button
               type="button"
@@ -504,7 +487,7 @@ export function Navbar() {
                 </button>
 
                 {profileOpen && (
-                  <div className="absolute right-0 mt-2 w-60 overflow-hidden rounded-xl border border-gray-200 bg-white p-1.5 shadow-xl dark:border-neutral-800 dark:bg-neutral-900 z-50">
+                  <div className="absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-xl border border-gray-200 bg-white p-1.5 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
                     <div className="border-b border-gray-100 px-3 py-2.5 dark:border-neutral-800">
                       <p className="truncate text-xs font-bold text-gray-900 dark:text-white">
                         {user?.name || user?.email || "Mon compte"}
@@ -546,13 +529,53 @@ export function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 active:scale-95"
+                className="flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 active:scale-95 sm:px-4 sm:py-2"
               >
                 Se connecter
               </Link>
             )}
+
+            {/* Bouton hamburger (mobile uniquement) */}
+            <button
+              type="button"
+              aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
+              aria-expanded={mobileOpen}
+              onClick={() => setMobileOpen((prev) => !prev)}
+              className="rounded-lg p-1.5 text-gray-700 transition hover:bg-gray-100 hover:text-red-600 dark:text-gray-300 dark:hover:bg-neutral-800 md:hidden"
+            >
+              {mobileOpen ? <X size={22} strokeWidth={1.8} /> : <Menu size={22} strokeWidth={1.8} />}
+            </button>
           </div>
         </div>
+
+        {/* Menu mobile */}
+        {mobileOpen && (
+          <nav className="border-t border-gray-200 bg-white px-4 pb-4 pt-2 dark:border-neutral-800 dark:bg-neutral-950 md:hidden">
+            <p className="mb-2 px-3 text-xs font-medium text-gray-500">
+              Informer &middot; Signaler &middot; Agir
+            </p>
+            <ul className="flex flex-col">
+              {links.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`block rounded-lg px-3 py-3 text-sm transition ${
+                        isActive
+                          ? "bg-red-50 font-bold text-black dark:bg-red-950/30 dark:text-white"
+                          : "font-medium text-gray-600 hover:bg-gray-100 hover:text-black dark:text-gray-400 dark:hover:bg-neutral-800 dark:hover:text-white"
+                      }`}
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        )}
       </header>
 
       {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} />}

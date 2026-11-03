@@ -16,17 +16,15 @@ export const registerSchema = z
 		organization: z.string().trim().optional(),
 		phone: z.string().regex(/^(\d{10})?$/, "Saisissez un numéro à 10 chiffres.").optional(),
 		password: z
-		.string()
-		.refine((v) => PASSWORD_RULES.every((rule) => rule.test(v)), "Le mot de passe ne respecte pas tous les critères."),
-		confirmPassword: z.string(),
+			.string()
+			.min(6, "Le mot de passe doit comporter au moins 6 caractères.")
+			.refine((v) => PASSWORD_RULES.every((rule) => rule.test(v)), "Le mot de passe ne respecte pas tous les critères."),
+		confirmPassword: z.string().optional(),
 		acceptTerms: z.boolean().refine((v) => v === true, "Vous devez accepter les conditions pour continuer."),
 	})
 	.superRefine((data, ctx) => {
-		if (data.password !== data.confirmPassword) {
+		if (data.confirmPassword && data.password !== data.confirmPassword) {
 			ctx.addIssue({ code: "custom", path: ["confirmPassword"], message: "Les mots de passe ne correspondent pas." });
-		}
-		if (data.role === "journalist" && !data.organization) {
-			ctx.addIssue({ code: "custom", path: ["organization"], message: "Indiquez votre média ou rédaction." });
 		}
 });
 

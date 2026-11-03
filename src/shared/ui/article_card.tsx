@@ -12,6 +12,9 @@ import {
   MessageCircle,
 } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { FacebookIcon, GoogleIcon } from "../layout/icon";
+import { getEmbedUrl } from "../lib/embed";
 
 export type CardArticle = DomainArticleItem | HomeArticleItem;
 
@@ -72,7 +75,13 @@ export function renderStatusBadge(status?: ArticleStatus | string) {
   }
 }
 
-export function ArticleCard({ article }: { article: CardArticle }) {
+export function ArticleCard({
+  article,
+  onClick,
+}: {
+  article: CardArticle;
+  onClick?: (article: CardArticle) => void;
+}) {
   const imageSrc =
     article.image ||
     ("image_url" in article && article.image_url) ||
@@ -105,10 +114,39 @@ export function ArticleCard({ article }: { article: CardArticle }) {
   const status = "status" in article ? article.status : undefined;
   const isFake = status?.toLowerCase() === "fake";
   const isVerified = status?.toLowerCase() === "verified";
+  const router = useRouter();
+
+  const sourceUrl =
+    "source_url" in article && typeof article.source_url === "string"
+      ? article.source_url
+      : null;
+
+  const hasValidImage = Boolean(
+    ("image_url" in article && article.image_url && article.image_url.trim()) ||
+    (article.image && article.image.trim() && article.image !== "/login-hero.jpg")
+  );
+  const embedInfo = sourceUrl ? getEmbedUrl(sourceUrl) : null;
+
+  const handleCardClick = () => {
+    if (onClick) {
+      onClick(article);
+    } else if ("id" in article && article.id !== undefined && article.id !== null) {
+      router.push(`/actualites/${article.id}`);
+    }
+  };
 
   return (
     <article
       key={article.title}
+      onClick={handleCardClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleCardClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
       className={`group flex cursor-pointer flex-col overflow-hidden rounded-xl border bg-white transition hover:shadow-lg dark:bg-neutral-900 ${
         isFake
           ? "border-red-300 ring-1 ring-red-200 dark:border-red-900/60 dark:ring-red-900/40"
@@ -118,25 +156,45 @@ export function ArticleCard({ article }: { article: CardArticle }) {
       }`}
     >
       <div className="relative aspect-video w-full overflow-hidden bg-gray-100 dark:bg-neutral-800">
-        <Image
-          src={imageSrc}
-          alt={article.title}
-          loading="eager"
-          fill
-          unoptimized={typeof imageSrc === "string" && imageSrc.startsWith("http")}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition duration-500 group-hover:scale-105"
-        />
+        {!hasValidImage && embedInfo ? (
+          <iframe
+            src={embedInfo.url}
+            title={article.title}
+            className="h-full w-full border-0 pointer-events-none"
+            tabIndex={-1}
+            loading="lazy"
+          />
+        ) : (
+          <Image
+            src={imageSrc}
+            alt={article.title}
+            loading="eager"
+            fill
+            unoptimized={typeof imageSrc === "string" && imageSrc.startsWith("http")}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover transition duration-500 group-hover:scale-105"
+          />
+        )}
 
-        {/* Badge Statut en haut à droite (Vérifié / Fake News / etc.) */}
+        {/* Badge Statut en haut à droite (Vérifié / Fake News / etc.)
         <div className="absolute top-2.5 right-2.5 z-10">
           {renderStatusBadge(status)}
-        </div>
+        </div> */}
+
 
         {/* Badge source originale en bas à gauche si disponible */}
         {"source" in article && article.source && (
-          <div className="absolute bottom-2 left-2 z-10 rounded bg-black/60 px-2 py-0.5 text-[10px] font-semibold uppercase text-white backdrop-blur-sm">
-            {article.source}
+          <div className="absolute bottom-2 left-2 z-10 rounded bg-black/60 px-2 py-0.5 text-[10px] font-semibold uppercase text-white backdrop-blur-sm flex gap-1 py-1 items-center">
+            {
+                article.source == "facebook" ?
+                <div className="text-blue-400 dark:bg-blue-950/60 dark:text-blue-300">
+                  <FacebookIcon/>
+                </div>: 
+                <GoogleIcon /> 
+            }
+            {
+              article.source
+            }
           </div>
         )}
       </div>

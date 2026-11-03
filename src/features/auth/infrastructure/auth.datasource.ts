@@ -67,7 +67,7 @@ export class AuthDatasource {
       const payload = {
         email: data.email,
         password: data.password,
-        role: data.role || "journalist",
+        role: (data.role as string) === "admin" ? "admin" : "journalist",
       };
 
       const response = await apiClient.post<User>(
@@ -86,6 +86,9 @@ export class AuthDatasource {
           throw new EmailAlreadyUsedError(
             detail || "Un compte existe déjà avec cette adresse e-mail."
           );
+        }
+        if (detail) {
+          throw new Error(detail);
         }
       }
       throw error;

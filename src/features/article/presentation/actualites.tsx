@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import {
   AlertOctagon,
   AlertTriangle,
@@ -9,7 +9,6 @@ import {
   ChevronRight,
   Clock,
   RefreshCw,
-  ShieldAlert,
 } from "lucide-react";
 import { articleRepository } from "../repository/article.repository";
 import type { ArticleItem } from "../domain/article.entity";
@@ -35,7 +34,22 @@ const CATEGORIES = [
   "Autres",
 ];
 
+export function TitleComponent({title, description}: {title: string, description:string})
+{
+  return (
+    <div>
+      <h2 className="relative inline-block pb-1 text-2xl font-extrabold text-gray-950 dark:text-white after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-16 after:border-b-2 after:border-red-600">
+        {title}
+      </h2>
+      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+        {description}
+      </p>
+    </div>
+  )
+}
+
 export default function Actualites() {
+  const containerRef = useRef<HTMLElement>(null);
   const [articles, setArticles] = useState<ArticleItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -91,25 +105,15 @@ export default function Actualites() {
     setPage(1);
   };
 
-  // Compteurs de vérification
-  const stats = useMemo(() => {
-    const verified = articles.filter(
-      (a) => a.status?.toLowerCase() === "verified"
-    ).length;
-    const fake = articles.filter(
-      (a) => a.status?.toLowerCase() === "fake"
-    ).length;
-    const unverified = articles.filter(
-      (a) =>
-        a.status?.toLowerCase() === "unverified" ||
-        a.status?.toLowerCase() === "pending"
-    ).length;
-    return { verified, fake, unverified, total: articles.length };
-  }, [articles]);
-
-  // Filtrage combiné par Catégorie et par Statut de vérification
+  // Filtrage combiné par Catégorie, Statut ET obligation d'avoir une image_url
   const filteredArticles = useMemo(() => {
     return articles.filter((a) => {
+      // Exclure les articles sans image valide
+      const img =
+        (a.image_url && a.image_url.trim() !== "" ? a.image_url : null) ||
+        (a.image && a.image.trim() !== "" ? a.image : null);
+      if (!img) return false;
+
       // Filtre catégorie
       const matchesCategory =
         activeCategory === "Tous" ||
@@ -125,33 +129,27 @@ export default function Actualites() {
     });
   }, [articles, activeCategory, activeStatus]);
 
-  const totalPages = Math.ceil(filteredArticles.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filteredArticles.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(Math.max(1, page), totalPages);
+
   const paginated = useMemo(() => {
-    const start = (page - 1) * ITEMS_PER_PAGE;
+    const start = (safePage - 1) * ITEMS_PER_PAGE;
     return filteredArticles.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredArticles, page]);
+  }, [filteredArticles, safePage]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      containerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
   return (
-    <main className="w-full px-4 pb-12 pt-6 sm:px-6">
-      <div className="mx-auto w-full max-w-6xl">
+    <main ref={containerRef} className="w-full pb-16 pt-8">
+      <div className="mx-auto w-full max-w-7xl px-6">
         {/* En-tête */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="relative inline-block pb-1 text-2xl font-extrabold text-gray-950 dark:text-white after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-16 after:border-b-2 after:border-red-600">
-              Journaux &amp; Veille d&apos;Information
-            </h2>
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              Vérification des faits, détection des fake news et actualités certifiées.
-            </p>
-          </div>
-
+          <TitleComponent title="Journaux &amp; Veille d&apos;Information" description="Vérification des faits, détection des fake news et actualités certifiées."/>
           <button
             type="button"
             onClick={loadArticles}
@@ -163,28 +161,9 @@ export default function Actualites() {
           </button>
         </div>
 
-        
 
-        {/* Filtres par Catégorie */}
-        <div className="mb-6 flex flex-wrap gap-2">
-          {CATEGORIES.map((cat) => {
-            const isActive = activeCategory === cat;
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => handleCategoryChange(cat)}
-                className={`rounded-full px-3.5 py-1 text-xs font-medium transition ${
-                  isActive
-                    ? "bg-red-600 text-white shadow-sm"
-                    : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-red-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-gray-300"
-                }`}
-              >
-                {cat}
-              </button>
-            );
-          })}
-        </div>
+        {/* Filtres par Catégorie et Statut */}
+        
 
         {/* État de chargement */}
         {loading && (
@@ -245,8 +224,8 @@ export default function Actualites() {
           <div className="mt-8 flex items-center justify-center gap-2">
             <button
               type="button"
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page === 1}
+              onClick={() => handlePageChange(safePage - 1)}
+              disabled={safePage === 1}
               className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 transition hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent dark:border-neutral-800 dark:text-gray-300"
             >
               <ChevronLeft size={16} />
@@ -259,7 +238,7 @@ export default function Actualites() {
                 type="button"
                 onClick={() => handlePageChange(p)}
                 className={`h-8 w-8 rounded-lg text-sm font-medium transition ${
-                  p === page
+                  p === safePage
                     ? "bg-red-600 text-white"
                     : "border border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-800"
                 }`}
@@ -270,8 +249,8 @@ export default function Actualites() {
 
             <button
               type="button"
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page === totalPages}
+              onClick={() => handlePageChange(safePage + 1)}
+              disabled={safePage === totalPages}
               className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 transition hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent dark:border-neutral-800 dark:text-gray-300"
             >
               Suivant
