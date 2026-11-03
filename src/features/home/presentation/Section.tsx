@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
   ArrowRight,
   CalendarDays,
@@ -75,13 +76,13 @@ export function Section(value: SectionModel) {
                 <ArrowRight size={17} />
               </button>
             ) : (
-              <a
+              <Link
                 href={value.id ? `/actualites/${value.id}` : "/actualites"}
                 className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-red-700"
               >
                 Lire l&apos;article
                 <ArrowRight size={17} />
-              </a>
+              </Link>
             )}
 
             {value.onVerify && (
