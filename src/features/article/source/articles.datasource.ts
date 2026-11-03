@@ -26,13 +26,52 @@ export class ArticleDatasource {
     try {
       // Essaye d'abord l'endpoint /news/
       try {
-        const newsList = await NewsDatasource.list({
-          page: typeof params?.page === "number" ? params.page : 1,
-          per_page: typeof params?.limit === "number" ? params.limit : 20,
-          status: typeof params?.status === "string" ? params.status : undefined,
-        });
-        if (newsList && Array.isArray(newsList.articles) && newsList.articles.length > 0) {
-          return newsList.articles;
+        // Si une page précise et une limite sont demandées
+        if (typeof params?.page === "number" && typeof params?.limit === "number") {
+          const newsList = await NewsDatasource.list({
+            page: params.page,
+            per_page: Math.min(100, params.limit),
+            status:
+              typeof params?.status === "string" &&
+              params.status !== "all" &&
+              params.status !== "Tous"
+                ? params.status
+                : undefined,
+          });
+          if (newsList && Array.isArray(newsList.articles)) {
+            return newsList.articles;
+          }
+        }
+
+        // Sinon, récupérer l'ensemble des articles disponibles en base (par pages de 100)
+        let allArticles: ArticleItem[] = [];
+        let currentPage = 1;
+        let total = 0;
+        const maxPages = 5; // Récupère jusqu'à 500 articles
+
+        do {
+          const newsList = await NewsDatasource.list({
+            page: currentPage,
+            per_page: 100,
+            status:
+              typeof params?.status === "string" &&
+              params.status !== "all" &&
+              params.status !== "Tous"
+                ? params.status
+                : undefined,
+          });
+
+          if (newsList && Array.isArray(newsList.articles) && newsList.articles.length > 0) {
+            allArticles = allArticles.concat(newsList.articles);
+            total = newsList.total || allArticles.length;
+          } else {
+            break;
+          }
+          currentPage++;
+        } while (allArticles.length < total && currentPage <= maxPages);
+
+        if (allArticles.length > 0) {
+          return allArticles;
         }
       } catch {
         // Continue sur /articles si /news/ échoue
