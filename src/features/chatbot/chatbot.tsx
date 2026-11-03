@@ -1,5 +1,6 @@
 "use client";
 
+import Config from "@/core/config";
 import { useEffect, useRef, useState } from "react";
 
 type Message = { role: "user" | "assistant"; content: string };
@@ -33,7 +34,7 @@ export default function ChatBot() {
     try {
       console.log("res")
 
-      const res = await fetch(`http://10.11.5.3:8000/api/v1/news/ask_grok/${text}`, {
+      const res = await fetch(`${Config.API_URL}/news/ask_grok/${text}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json', // Obligatoire pour éviter une 422
@@ -71,7 +72,7 @@ export default function ChatBot() {
   };
 
   return (
-    <div className="flex h-125 max-h-[70vh] w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
+    <div className="flex h-125 max-h-[70vh] w-full flex-col overflow-hidden rounded-2xl shadow-md border border-white bg-white">
       {/* En-tête */}
       <div className="flex items-center gap-3 bg-red-600 px-4 py-3 text-white">
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 font-bold">
@@ -110,14 +111,14 @@ export default function ChatBot() {
       </div>
 
       {/* Zone de saisie */}
-      <div className="flex gap-2 border-t border-gray-200 bg-white p-3">
+      <div className="flex gap-2 border-t border-gray-200 light:bg-white p-3">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
           placeholder="Collez un texte à vérifier..."
-          className="flex-1 rounded-full border border-gray-200 px-4 py-2 text-sm outline-none focus:border-red-400"
+          className="flex-1 rounded-full dark:text-black border border-gray-200 px-4 py-2 text-sm outline-none focus:border-red-400"
         />
         <button
           type="button"
