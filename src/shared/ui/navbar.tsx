@@ -282,9 +282,16 @@ function SearchModal({ onClose }: { onClose: () => void }) {
 
           {!loading &&
             results.map((article) => (
-              <li key={article.id} className="transition hover:bg-gray-50 dark:hover:bg-neutral-800/60">
+              <li
+                key={article.id}
+                className="group transition hover:bg-gray-50 dark:hover:bg-neutral-800/60"
+              >
                 <div className="flex items-start justify-between gap-3 px-4 py-3">
-                  <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/actualites/${article.id}`}
+                    onClick={onClose}
+                    className="min-w-0 flex-1 cursor-pointer block"
+                  >
                     <div className="mb-1 flex flex-wrap items-center gap-2">
                       <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400">
                         {article.source || "News"}
@@ -296,19 +303,20 @@ function SearchModal({ onClose }: { onClose: () => void }) {
                         </span>
                       )}
                     </div>
-                    <h4 className="line-clamp-1 text-sm font-semibold text-gray-900 dark:text-white">
+                    <h4 className="line-clamp-1 text-sm font-semibold text-gray-900 transition group-hover:text-red-600 dark:text-white dark:group-hover:text-red-400">
                       {article.title}
                     </h4>
                     <p className="mt-1 line-clamp-2 text-xs text-gray-500 dark:text-gray-400">
                       {article.content || article.description}
                     </p>
-                  </div>
+                  </Link>
 
                   {article.source_url && (
                     <a
                       href={article.source_url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
                       className="shrink-0 rounded-md p-1.5 text-gray-400 transition hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-neutral-700 dark:hover:text-white"
                       title="Ouvrir la source originale"
                     >
@@ -359,7 +367,10 @@ export function Navbar() {
     if (isDark) {
       document.documentElement.classList.add("dark");
     }
-    setDark(isDark);
+    const timer = setTimeout(() => {
+      setDark(isDark);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // Synchronisation de l'authentification avec useSyncExternalStore
@@ -500,17 +511,6 @@ export function Navbar() {
                           {user.role}
                         </span>
                       )}
-                    </div>
-
-                    <div className="py-1">
-                      <Link
-                        href="/dashboard"
-                        onClick={() => setProfileOpen(false)}
-                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-neutral-800"
-                      >
-                        <LayoutDashboard size={14} />
-                        Tableau de bord
-                      </Link>
                     </div>
 
                     <div className="border-t border-gray-100 pt-1 dark:border-neutral-800">
