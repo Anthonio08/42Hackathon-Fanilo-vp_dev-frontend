@@ -143,25 +143,27 @@ export function analyzeOfficialStatus(item: VerificationItem): OfficialAnalysis 
 
   let status: OfficialStatusType = "pending_official";
   let is_official = false;
-  let label = "Non Officialisé / Rumeur en Circulation";
-  let badge_title = "Non Officialisé";
-  let badge_class = "bg-amber-500 text-white";
-  let border_class = "border-amber-200 dark:border-amber-900/60";
-  let bg_class = "bg-amber-50/70 dark:bg-amber-950/20";
-  let text_class = "text-amber-800 dark:text-amber-300";
+  let label = "Non officialisé (absence d'acte d'État)";
+  let badge_title = "Non officialisé";
+  let badge_class =
+    "bg-neutral-100 text-neutral-700 border border-neutral-300 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700";
+  let border_class = "border-gray-200 dark:border-neutral-800";
+  let bg_class = "bg-gray-50/70 dark:bg-neutral-850/60";
+  let text_class = "text-gray-900 dark:text-white";
   let summary = `Aucune source institutionnelle officielle (0/${total_links_count}) n'atteste encore de cette déclaration. L'information circule principalement comme rumeur sans communiqué étatique.`;
   let official_score = 30;
 
   if (isRefuted) {
     status = "officially_refuted";
     is_official = false;
-    label = "Démenti Officiel / Information Fausse";
-    badge_title = "Démenti Formel";
-    badge_class = "bg-rose-600 text-white";
-    border_class = "border-rose-200 dark:border-rose-900/60";
-    bg_class = "bg-rose-50/70 dark:bg-rose-950/20";
-    text_class = "text-rose-800 dark:text-rose-300";
-    summary = `Cette information a été démentie par les recoupements officiels (${contradicting_links_count} source(s) réfutante(s) sur ${total_links_count} liens analysés).`;
+    label = "Démenti officiel / Information réfutée";
+    badge_title = "Démenti officiel";
+    badge_class =
+      "bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900";
+    border_class = "border-gray-200 dark:border-neutral-800";
+    bg_class = "bg-gray-50/70 dark:bg-neutral-850/60";
+    text_class = "text-gray-900 dark:text-white";
+    summary = `Cette information a été réfutée par les recoupements officiels (${contradicting_links_count} source(s) contradictoire(s) sur ${total_links_count} liens analysés).`;
     official_score = 15;
   } else if (
     official_sources_count >= 1 &&
@@ -171,13 +173,14 @@ export function analyzeOfficialStatus(item: VerificationItem): OfficialAnalysis 
   ) {
     status = "official_confirmed";
     is_official = true;
-    label = "Information Officiellement Confirmée";
-    badge_title = "Déjà Officialisée";
-    badge_class = "bg-emerald-600 text-white";
-    border_class = "border-emerald-200 dark:border-emerald-900/60";
-    bg_class = "bg-emerald-50/70 dark:bg-emerald-950/20";
-    text_class = "text-emerald-800 dark:text-emerald-300";
-    summary = `L'information est déjà officielle : validée par ${official_sources_count} source(s) institutionnelle(s) ou médias de référence parmi ${total_links_count} liens concordants.`;
+    label = "Information officiellement confirmée";
+    badge_title = "Déjà officialisé";
+    badge_class =
+      "bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900";
+    border_class = "border-gray-200 dark:border-neutral-800";
+    bg_class = "bg-gray-50/70 dark:bg-neutral-850/60";
+    text_class = "text-gray-900 dark:text-white";
+    summary = `L'information est attestée par ${official_sources_count} source(s) institutionnelle(s) ou médias de référence parmi ${total_links_count} liens consultés.`;
     official_score = Math.min(98, 80 + official_sources_count * 4);
   } else if (
     corroborating_links_count >= 2 ||
@@ -185,13 +188,14 @@ export function analyzeOfficialStatus(item: VerificationItem): OfficialAnalysis 
   ) {
     status = "high_corroboration";
     is_official = true;
-    label = "Forte Convergence de Liens & Déclarations";
-    badge_title = "Fortement Corroboré";
-    badge_class = "bg-blue-600 text-white";
-    border_class = "border-blue-200 dark:border-blue-900/60";
-    bg_class = "bg-blue-50/70 dark:bg-blue-950/20";
-    text_class = "text-blue-800 dark:text-blue-300";
-    summary = `Statistiques concluantes : ${corroborating_links_count} sources concordantes sur ${total_links_count} liens soutiennent l'affirmation. En attente de décret d'application formel.`;
+    label = "Forte convergence des sources de presse";
+    badge_title = "Sources concordantes";
+    badge_class =
+      "bg-slate-100 text-slate-800 border border-slate-300 dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700";
+    border_class = "border-gray-200 dark:border-neutral-800";
+    bg_class = "bg-gray-50/70 dark:bg-neutral-850/60";
+    text_class = "text-gray-900 dark:text-white";
+    summary = `Statistiques concluantes : ${corroborating_links_count} sources concordantes sur ${total_links_count} liens soutiennent l'affirmation.`;
     official_score = Math.min(88, 65 + corroborating_links_count * 5);
   }
 
