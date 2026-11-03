@@ -198,7 +198,7 @@ export function SatelliteMap({
                   📍 {m.district}
                 </p>
                 <p className="text-[11px] text-gray-400">
-                  🕒 {m.time}
+                  {m.time}
                 </p>
 
                 {/* Description */}
@@ -209,7 +209,7 @@ export function SatelliteMap({
                 {/* Actions */}
                 <div className="flex items-center justify-between border-t border-gray-100 pt-2 text-xs">
                   <span className="text-gray-500 text-[11px]">
-                    👥 {m.confirmations} témoins
+                    {m.confirmations} témoins
                   </span>
                   <button
                     type="button"

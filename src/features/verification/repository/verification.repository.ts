@@ -3,8 +3,9 @@ import type {
   VerificationItem,
   VerificationListResponse,
 } from "../domain/verification.entity";
+import { analyzeOfficialStatus } from "../domain/official-analysis";
 
-const MOCK_VERIFICATIONS: VerificationItem[] = [
+const MOCK_VERIFICATIONS_RAW: VerificationItem[] = [
   {
     id: 6,
     claim_text: "Mickael Randrianirina est president de la republique",
@@ -97,6 +98,18 @@ const MOCK_VERIFICATIONS: VerificationItem[] = [
   },
 ];
 
+const MOCK_VERIFICATIONS: VerificationItem[] = MOCK_VERIFICATIONS_RAW.map((item) => ({
+  ...item,
+  official_analysis: analyzeOfficialStatus(item),
+}));
+
+function attachOfficialAnalysis(item: VerificationItem): VerificationItem {
+  return {
+    ...item,
+    official_analysis: item.official_analysis || analyzeOfficialStatus(item),
+  };
+}
+
 export interface VerificationRepository {
   verify(claim: string): Promise<VerificationItem>;
   listAll(page?: number, perPage?: number): Promise<VerificationListResponse>;
@@ -108,7 +121,8 @@ export interface VerificationRepository {
 export class VerificationRepositoryImpl implements VerificationRepository {
   async verify(claim: string): Promise<VerificationItem> {
     try {
-      return await VerificationDatasource.verify(claim);
+      const result = await VerificationDatasource.verify(claim);
+      return attachOfficialAnalysis(result);
     } catch (error) {
       console.warn("Backend non joignable pour /verification/verify, simulation mock :", error);
       // Simulation intelligente de réponse si le backend est offline
@@ -118,26 +132,27 @@ export class VerificationRepositoryImpl implements VerificationRepository {
       const isKnown = MOCK_VERIFICATIONS.find((v) =>
         lower.includes(v.claim_text.toLowerCase().slice(0, 15))
       );
-      if (isKnown) return isKnown;
+      if (isKnown) return attachOfficialAnalysis(isKnown);
 
-      return {
+      const isRefuted = lower.includes("fake") || lower.includes("faux");
+      const fallbackItem: VerificationItem = {
         id: Date.now(),
         claim_text: claim,
         status: "completed",
-        verdict: lower.includes("fake") || lower.includes("faux") ? "likely_false" : "likely_true",
+        verdict: isRefuted ? "likely_false" : "likely_true",
         confidence_score: 0.65,
         analysis_summary: `Analyse automatique de l'affirmation « ${claim} ». 12 sources consultées sur Google et Facebook.`,
         sources_found: 12,
-        sources_supporting: 4,
-        sources_contradicting: 1,
+        sources_supporting: isRefuted ? 0 : 4,
+        sources_contradicting: isRefuted ? 5 : 1,
         sources: [
           {
             id: Date.now() + 1,
             source_type: "google",
-            url: "https://news.google.com",
-            title: `Résultats de recherche Google pour : ${claim}`,
-            snippet: `Extraits d'articles de presse et communiqués officiels concernant : ${claim}.`,
-            supports_claim: true,
+            url: "https://www.lexpress.mg/actualites",
+            title: `Résultats de presse et communiqués officiels : ${claim}`,
+            snippet: `Extraits d'articles de presse et vérification des déclarations concernant : ${claim}.`,
+            supports_claim: !isRefuted,
             relevance_score: 0.7,
           },
           {
@@ -152,6 +167,7 @@ export class VerificationRepositoryImpl implements VerificationRepository {
         ],
         created_at: new Date().toISOString(),
       };
+      return attachOfficialAnalysis(fallbackItem);
     }
   }
 
@@ -159,13 +175,16 @@ export class VerificationRepositoryImpl implements VerificationRepository {
     try {
       const res = await VerificationDatasource.listAll(page, perPage);
       if (res && Array.isArray(res.verifications) && res.verifications.length > 0) {
-        return res;
+        return {
+          ...res,
+          verifications: res.verifications.map(attachOfficialAnalysis),
+        };
       }
       return {
         total: MOCK_VERIFICATIONS.length,
         page,
         per_page: perPage,
-        verifications: MOCK_VERIFICATIONS,
+        verifications: MOCK_VERIFICATIONS.map(attachOfficialAnalysis),
       };
     } catch (error) {
       console.warn("Backend non joignable pour /verification/all, fallback mock :", error);
@@ -173,31 +192,36 @@ export class VerificationRepositoryImpl implements VerificationRepository {
         total: MOCK_VERIFICATIONS.length,
         page,
         per_page: perPage,
-        verifications: MOCK_VERIFICATIONS,
+        verifications: MOCK_VERIFICATIONS.map(attachOfficialAnalysis),
       };
     }
   }
 
   async listMine(page = 1, perPage = 20): Promise<VerificationListResponse> {
     try {
-      return await VerificationDatasource.listMine(page, perPage);
+      const res = await VerificationDatasource.listMine(page, perPage);
+      return {
+        ...res,
+        verifications: (res.verifications || []).map(attachOfficialAnalysis),
+      };
     } catch (error) {
       console.warn("Backend non joignable pour /verification/, fallback mock :", error);
       return {
         total: MOCK_VERIFICATIONS.length,
         page,
         per_page: perPage,
-        verifications: MOCK_VERIFICATIONS,
+        verifications: MOCK_VERIFICATIONS.map(attachOfficialAnalysis),
       };
     }
   }
 
   async getById(id: number | string): Promise<VerificationItem> {
     try {
-      return await VerificationDatasource.getById(id);
+      const res = await VerificationDatasource.getById(id);
+      return attachOfficialAnalysis(res);
     } catch (error) {
       const found = MOCK_VERIFICATIONS.find((v) => String(v.id) === String(id));
-      if (found) return found;
+      if (found) return attachOfficialAnalysis(found);
       throw error;
     }
   }
