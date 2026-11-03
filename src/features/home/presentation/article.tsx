@@ -1,13 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
-  AlertOctagon,
-  AlertTriangle,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Clock,
   RefreshCw,
   Search,
   X,
@@ -17,14 +13,6 @@ import { articles as defaultArticles } from "../infrastructure/data";
 import { ArticleCard } from "@/shared/ui/article_card";
 
 const ITEMS_PER_PAGE = 6;
-
-const STATUS_FILTERS = [
-  { id: "all", label: "Tous", icon: null },
-  { id: "verified", label: "Vérifiés", icon: CheckCircle2, color: "text-emerald-600" },
-  { id: "fake", label: "Fake News", icon: AlertOctagon, color: "text-red-600" },
-  { id: "unverified", label: "Non vérifiés", icon: AlertTriangle, color: "text-amber-500" },
-  { id: "pending", label: "En attente", icon: Clock, color: "text-slate-400" },
-];
 
 interface ArticleProps {
   active: string;
@@ -41,15 +29,32 @@ export function Article({
   onRefresh,
   onSelectArticle,
 }: ArticleProps) {
+  const sectionRef = useRef<HTMLElement>(null);
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
 
-  // Utilise les articles passés en props (dynamiques) ou les articles de secours
-  const sourceArticles =
-    propArticles && propArticles.length > 0 ? propArticles : defaultArticles;
+  // Ajustement de la page quand la catégorie ou les articles changent (pattern React sans useEffect)
+  const [prevActive, setPrevActive] = useState(active);
+  const [prevArticles, setPrevArticles] = useState(propArticles);
+  if (prevActive !== active || prevArticles !== propArticles) {
+    setPrevActive(active);
+    setPrevArticles(propArticles);
+    setPage(1);
+  }
 
-  // Filtrage combiné Catégorie + Recherche + Statut
+  // Filtre strict : n'afficher QUE les articles disposant d'une image valide
+  const sourceArticles = useMemo(() => {
+    const list =
+      propArticles && propArticles.length > 0 ? propArticles : defaultArticles;
+    return list.filter((a) => {
+      const img =
+        ("image_url" in a && a.image_url ? a.image_url : null) ||
+        ("image" in a && a.image ? a.image : null);
+      return Boolean(img && img.trim() !== "");
+    });
+  }, [propArticles]);
+
+  // Filtrage combiné Catégorie + Recherche
   const filtered = useMemo(() => {
     return sourceArticles.filter((a) => {
       // Filtre catégorie
@@ -57,11 +62,6 @@ export function Article({
         active === "Tous" ||
         (a.category || ("source" in a && (a as { source?: string }).source) || "")
           .toLowerCase() === active.toLowerCase();
-
-      // Filtre statut
-      const currentStatus = (("status" in a && a.status) || "pending").toLowerCase();
-      const statusMatches =
-        statusFilter === "all" || currentStatus === statusFilter.toLowerCase();
 
       // Filtre recherche textuelle
       const q = searchQuery.trim().toLowerCase();
@@ -73,9 +73,9 @@ export function Article({
           typeof a.content === "string" &&
           a.content.toLowerCase().includes(q));
 
-      return catMatches && statusMatches && searchMatches;
+      return catMatches && searchMatches;
     });
-  }, [sourceArticles, active, statusFilter, searchQuery]);
+  }, [sourceArticles, active, searchQuery]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const safePage = Math.min(page, totalPages);
@@ -88,7 +88,7 @@ export function Article({
   const handlePage = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
-      window.scrollTo({ top: 500, behavior: "smooth" });
+      sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -97,19 +97,13 @@ export function Article({
     setPage(1);
   };
 
-  const handleStatusChange = (status: string) => {
-    setStatusFilter(status);
-    setPage(1);
-  };
-
   const handleResetFilters = () => {
     setSearchQuery("");
-    setStatusFilter("all");
     setPage(1);
   };
 
   return (
-    <section className="mt-10">
+    <section ref={sectionRef} className="mt-10">
       {/* En-tête de section avec Recherche et Actualisation */}
       <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
