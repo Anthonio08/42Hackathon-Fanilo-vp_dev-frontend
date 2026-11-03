@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useEffect, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import {
   AlertOctagon,
@@ -83,6 +84,14 @@ export function CarteLayout() {
   const [reportSuccess, setReportSuccess] = useState<string | null>(null);
 
   const [, startTransition] = useTransition();
+  const searchParams = useSearchParams();
+
+  // Ouvrir automatiquement le modal si demandé par URL (?report=true)
+  useEffect(() => {
+    if (searchParams.get("report") === "true") {
+      setIsReportModalOpen(true);
+    }
+  }, [searchParams]);
 
   // Filtered incidents
   const filteredIncidents = useMemo(() => {

@@ -1,6 +1,7 @@
-"use client"
+"use client";
 
-import { ArrowRight, MapPin, Megaphone } from "lucide-react"
+import Link from "next/link";
+import { ArrowRight, MapPin, Megaphone } from "lucide-react";
 
 export function Incendie() {
     return (
@@ -17,21 +18,21 @@ export function Incendie() {
                 et les journalistes.
             </p>
             <div className="flex w-full flex-col gap-3">
-                <a
-                    href="/signaler"
+                <Link
+                    href="/carte?report=true"
                     className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-bold text-red-600 transition hover:bg-gray-100"
                 >
                     Déclarer un incident
                     <ArrowRight size={17} />
-                </a>
-                <a
+                </Link>
+                <Link
                     href="/carte"
                     className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/80 px-4 py-3 text-sm font-bold text-white transition hover:bg-white hover:text-red-600"
                 >
                     <MapPin size={17} />
                     Voir la carte
-                </a>
+                </Link>
             </div>
         </section>
-    )
+    );
 }
