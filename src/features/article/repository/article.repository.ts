@@ -48,8 +48,16 @@ export class ArticleRepositoryImpl implements ArticleRepository {
           );
         }
 
-        // Articles avec images en premier
-        normalized.sort((a, b) => (b.image_url ? 1 : 0) - (a.image_url ? 1 : 0));
+        // Ne conserver STRICTEMENT que les articles ayant une image_url valide
+        normalized = normalized.filter(
+          (item) => Boolean(item.image_url && item.image_url.trim() !== "")
+        );
+
+        if (params?.page && params?.limit) {
+          const start = (params.page - 1) * params.limit;
+          normalized = normalized.slice(start, start + params.limit);
+        }
+
         return normalized;
       }
       return this.getLocalArticles(params);

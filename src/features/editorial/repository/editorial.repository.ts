@@ -1,4 +1,5 @@
 import { EditorialDatasource } from "../source/editorial.datasource";
+import { authStorage } from "@/core/api.client";
 import type {
   EditorialArticle,
   EditorialListResponse,
@@ -125,12 +126,31 @@ const SAMPLE_EDITORIAL_ARTICLES: EditorialArticle[] = [
 
 export class EditorialRepository {
   /**
+   * Nettoyer les paramètres pour l'API FastAPI (retire "all" et les valeurs vides)
+   */
+  private sanitizeParams(params?: EditorialListParams): EditorialListParams {
+    if (!params) return {};
+    const clean: EditorialListParams = {};
+    if (params.page && params.page > 0) clean.page = params.page;
+    if (params.per_page && params.per_page > 0) clean.per_page = Math.min(100, params.per_page);
+    if (params.status && (params.status as string) !== "all") clean.status = params.status;
+    if (params.category && (params.category as string) !== "all") clean.category = params.category;
+    if (params.rating && (params.rating as string) !== "all") clean.rating = params.rating;
+    if (params.author_id) clean.author_id = params.author_id;
+    if (typeof params.is_featured === "boolean") clean.is_featured = params.is_featured;
+    if (params.search && params.search.trim()) clean.search = params.search.trim();
+    if (params.sort_by) clean.sort_by = params.sort_by;
+    return clean;
+  }
+
+  /**
    * Lister les articles publiés uniquement
    */
   async listPublished(params?: EditorialListParams): Promise<EditorialListResponse> {
     try {
-      const data = await EditorialDatasource.listArticles({ ...params, status: "published" });
-      if (data && Array.isArray(data.articles) && data.articles.length > 0) {
+      const clean = this.sanitizeParams({ ...params, status: "published" });
+      const data = await EditorialDatasource.listArticles(clean);
+      if (data && Array.isArray(data.articles)) {
         return data;
       }
       return this.getLocalArticles({ ...params, status: "published" });
@@ -145,8 +165,9 @@ export class EditorialRepository {
    */
   async listAll(params?: EditorialListParams): Promise<EditorialListResponse> {
     try {
-      const data = await EditorialDatasource.listArticles(params);
-      if (data && Array.isArray(data.articles) && data.articles.length > 0) {
+      const clean = this.sanitizeParams(params);
+      const data = await EditorialDatasource.listArticles(clean);
+      if (data && Array.isArray(data.articles)) {
         return data;
       }
       return this.getLocalArticles(params);
@@ -336,13 +357,24 @@ export class EditorialRepository {
    * Réviser un article (approuver/rejeter)
    */
   async reviewArticle(id: number, data: ReviewDecision): Promise<EditorialArticle> {
+    const decisionNormalized =
+      data.decision === "approved" || data.decision === "approve" ? "approve" : "reject";
+    const payload: ReviewDecision = {
+      decision: decisionNormalized,
+      feedback:
+        data.feedback ||
+        (decisionNormalized === "approve"
+          ? "Article validé par la rédaction."
+          : "Demande de révision soumise."),
+    };
+
     try {
-      return await EditorialDatasource.reviewArticle(id, data);
+      return await EditorialDatasource.reviewArticle(id, payload);
     } catch (err) {
       const art = SAMPLE_EDITORIAL_ARTICLES.find((a) => a.id === id);
       if (art) {
-        art.status = data.decision === "approved" ? "approved" : "rejected";
-        art.review_feedback = data.feedback;
+        art.status = decisionNormalized === "approve" ? "approved" : "rejected";
+        art.review_feedback = payload.feedback;
         art.updated_at = new Date().toISOString();
         return { ...art };
       }
@@ -408,6 +440,9 @@ export class EditorialRepository {
    * Récupérer les commentaires d'un article
    */
   async getComments(articleId: number): Promise<EditorialReview[]> {
+    if (!authStorage.isAuthenticated()) {
+      return [];
+    }
     try {
       return await EditorialDatasource.getComments(articleId);
     } catch {

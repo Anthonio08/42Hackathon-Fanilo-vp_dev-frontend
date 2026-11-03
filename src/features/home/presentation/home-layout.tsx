@@ -53,10 +53,20 @@ export default function HomeLayout() {
     };
   }, []);
 
-  // Calcul des compteurs par catégorie
+  // Filtrer STRICTEMENT les articles disposant d'une image valide
+  const articlesWithImage = useMemo(() => {
+    return articles.filter((a) => {
+      const img =
+        (a.image_url && a.image_url.trim() !== "" ? a.image_url : null) ||
+        (a.image && a.image.trim() !== "" ? a.image : null);
+      return Boolean(img);
+    });
+  }, [articles]);
+
+  // Calcul des compteurs par catégorie sur les articles avec images
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {
-      Tous: articles.length,
+      Tous: articlesWithImage.length,
       Sécurité: 0,
       Transport: 0,
       Météo: 0,
@@ -64,7 +74,7 @@ export default function HomeLayout() {
       Santé: 0,
       Autres: 0,
     };
-    articles.forEach((a) => {
+    articlesWithImage.forEach((a) => {
       const cat = a.category || "Autres";
       if (counts[cat] !== undefined) {
         counts[cat] += 1;
@@ -73,15 +83,32 @@ export default function HomeLayout() {
       }
     });
     return counts;
-  }, [articles]);
+  }, [articlesWithImage]);
 
-  // Article dynamique mis à la une
-  const featured = articles.length > 0 ? articles[0] : null;
-  // Les articles suivants alimentent le flux paginé
-  const feedArticles = articles.length > 1 ? articles.slice(1) : articles;
+  // Article dynamique mis à la une (avec image garantie)
+  const featured = articlesWithImage.length > 0 ? articlesWithImage[0] : null;
+  // Les articles suivants alimentent le flux paginé (tous avec image)
+  const feedArticles =
+    articlesWithImage.length > 1
+      ? articlesWithImage.slice(1)
+      : articlesWithImage;
 
   const handleOpenFeatured = () => {
-    if (featured) setSelectedArticle(featured);
+    if (featured) {
+      if (featured.id !== undefined && featured.id !== null) {
+        router.push(`/actualites/${featured.id}`);
+      } else {
+        setSelectedArticle(featured);
+      }
+    }
+  };
+
+  const handleSelectArticle = (art: ArticleItem) => {
+    if (art.id !== undefined && art.id !== null) {
+      router.push(`/actualites/${art.id}`);
+    } else {
+      setSelectedArticle(art);
+    }
   };
 
   const handleVerifyFeatured = () => {
@@ -169,14 +196,14 @@ export default function HomeLayout() {
               articles={feedArticles}
               loading={loading}
               onRefresh={loadArticles}
-              onSelectArticle={(art) => setSelectedArticle(art)}
+              onSelectArticle={handleSelectArticle}
             />
           </div>
         </div>
         <aside className="w-full lg:col-span-1">
           <LastIncident
             articles={articles}
-            onSelectIncident={(art) => setSelectedArticle(art)}
+            onSelectIncident={handleSelectArticle}
             onSelectCategory={(cat) => setActive(cat)}
           />
         </aside>

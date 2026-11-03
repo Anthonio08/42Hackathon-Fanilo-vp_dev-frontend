@@ -75,11 +75,15 @@ export function EditorialDetailPage({ identifier }: { identifier: string }) {
         const data = await editorialRepository.getArticle(identifier);
         if (!cancelled) {
           setArticle(data);
-          try {
-            const reviewsData = await editorialRepository.getComments(data.id);
-            if (!cancelled) setComments(reviewsData);
-          } catch {
-            // Ignorer
+          if (data.reviews && data.reviews.length > 0) {
+            setComments(data.reviews);
+          } else if (authStorage.isAuthenticated()) {
+            try {
+              const reviewsData = await editorialRepository.getComments(data.id);
+              if (!cancelled) setComments(reviewsData);
+            } catch {
+              // Ignorer
+            }
           }
         }
       } catch {
@@ -173,7 +177,7 @@ export function EditorialDetailPage({ identifier }: { identifier: string }) {
           </span>
         </div>
 
-        <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-neutral-950 dark:text-white sm:text-4xl">
+        <h1 className="mt-3 text-2xl font-extrabold leading-tight tracking-tight text-gray-950 dark:text-white sm:text-3xl">
           {article.title}
         </h1>
 
@@ -283,7 +287,7 @@ export function EditorialDetailPage({ identifier }: { identifier: string }) {
                     onClick={() =>
                       handleAction(() =>
                         editorialRepository.reviewArticle(article.id, {
-                          decision: "approved",
+                          decision: "approve",
                           feedback: reviewFeedback,
                         })
                       )

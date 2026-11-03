@@ -38,11 +38,13 @@ export function useRegisterForm() {
         await authRepository.register(data);
         router.replace("/");
       } catch (error) {
-        setServerError(
-          error instanceof EmailAlreadyUsedError
-            ? "Un compte existe déjà avec cette adresse e-mail."
-            : "Inscription impossible pour le moment. Veuillez réessayer."
-        );
+        if (error instanceof EmailAlreadyUsedError) {
+          setServerError("Un compte existe déjà avec cette adresse e-mail.");
+        } else if (error instanceof Error && error.message) {
+          setServerError(error.message);
+        } else {
+          setServerError("Inscription impossible pour le moment. Veuillez réessayer.");
+        }
       }
     }
   );

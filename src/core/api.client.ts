@@ -109,13 +109,14 @@ apiClient.interceptors.request.use(
   (error: AxiosError) => Promise.reject(error)
 );
 
-// Intercepteur de réponse : intercepte les 401 et nettoie la session
+// Intercepteur de réponse : intercepte les 401 et nettoie la session si l'utilisateur était authentifié
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
+      const hadToken = Boolean(authStorage.getToken());
       authStorage.clearAuth();
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined" && hadToken) {
         window.dispatchEvent(new CustomEvent("auth:unauthorized"));
         if (
           !window.location.pathname.startsWith("/login") &&

@@ -11,6 +11,8 @@ import {
   X,
 } from "lucide-react";
 import { editorialRepository } from "../repository/editorial.repository";
+import { authStorage } from "@/core/api.client";
+import { TitleComponent } from "@/features/article/presentation/actualites";
 import type {
   EditorialArticle,
   EditorialCategory,
@@ -196,6 +198,11 @@ export function EditorialLayout() {
     e.preventDefault();
     if (!draftTopic.trim() || generating) return;
 
+    if (!authStorage.isAuthenticated()) {
+      setGenerateMessage("Veuillez vous connecter pour générer une ébauche avec le moteur d'enquête.");
+      return;
+    }
+
     setGenerating(true);
     setGenerateMessage(null);
 
@@ -221,6 +228,11 @@ export function EditorialLayout() {
   const handleCreateArticle = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newContent.trim() || creating) return;
+
+    if (!authStorage.isAuthenticated()) {
+      alert("Veuillez vous connecter pour enregistrer un article.");
+      return;
+    }
 
     setCreating(true);
     try {
@@ -258,20 +270,13 @@ export function EditorialLayout() {
   return (
     <main className="w-full pb-20 pt-10 text-neutral-900 dark:text-neutral-100">
       <div className="mx-auto w-full max-w-7xl px-6">
-        {/* ── En-tête journalistique épuré ── */}
-        <header className="border-b border-neutral-200 pb-8 dark:border-neutral-800">
+        {/* ── En-tête journalistique épuré avec TitleComponent ── */}
+        <header className="border-b border-neutral-200 pb-6 dark:border-neutral-800">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-red-600">
-                La Rédaction &middot; Enquêtes &amp; Décryptages
-              </p>
-              <h1 className="mt-2 text-3xl font-bold tracking-tight text-neutral-950 dark:text-white sm:text-4xl">
-                Espace Éditorial
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-                Analyses approfondies, vérification des déclarations publiques et travail de fond des journalistes sur les grands enjeux malgaches.
-              </p>
-            </div>
+            <TitleComponent
+              title="Espace Éditorial"
+              description="Analyses approfondies, vérification des déclarations publiques et travail de fond des journalistes sur les grands enjeux malgaches."
+            />
 
             <div className="flex items-center gap-3">
               <button
@@ -489,7 +494,7 @@ export function EditorialLayout() {
                     <span>{formatDateHuman(featuredArticle.published_at || featuredArticle.created_at)}</span>
                   </div>
 
-                  <h2 className="mt-3 text-2xl font-bold leading-tight text-neutral-950 group-hover:text-red-600 dark:text-white sm:text-3xl">
+                  <h2 className="mt-3 text-2xl font-extrabold leading-tight text-gray-950 group-hover:text-red-600 dark:text-white sm:text-3xl">
                     <Link href={`/blog/${featuredArticle.slug || featuredArticle.id}`}>
                       {featuredArticle.title}
                     </Link>
@@ -548,7 +553,7 @@ export function EditorialLayout() {
                         <span>{formatDateHuman(article.published_at || article.created_at)}</span>
                       </div>
 
-                      <h3 className="mt-1.5 text-base font-bold leading-snug text-neutral-950 group-hover:text-red-600 dark:text-white">
+                      <h3 className="mt-1.5 text-base font-bold leading-snug text-gray-950 group-hover:text-red-600 dark:text-white">
                         <Link href={`/blog/${article.slug || article.id}`}>
                           {article.title}
                         </Link>
