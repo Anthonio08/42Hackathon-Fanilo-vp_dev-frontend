@@ -275,10 +275,6 @@ export default function ArticleDetail({
     <div className="mx-auto max-w-7xl px-6 py-8">
       {/* Fil d'Ariane (Breadcrumb) */}
       <nav className="mb-6 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-        <Link href="/" className="hover:text-red-600 transition">
-          Accueil
-        </Link>
-        <span>›</span>
         <Link href="/actualites" className="hover:text-red-600 transition">
           Actualités
         </Link>
